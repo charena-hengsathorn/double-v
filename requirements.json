@@ -1,0 +1,132 @@
+{
+  "project": {
+    "name": "Double V Executive Dashboard",
+    "version": "1.0.0",
+    "description": "Revenue forecasting and pipeline management dashboard suite"
+  },
+  "vision": {
+    "primary_dashboards": [
+      "Pipeline Integrity app - monitor conversion health and risk exposure",
+      "Financials app - evaluate cash flow and overall revenue outlook"
+    ],
+    "objectives": [
+      "Translate current-year billing into next-year revenue projections",
+      "Quantify risk by probability-weighting deals and monitoring slippage",
+      "Provide executives with rapid insight via concise summary reports"
+    ]
+  },
+  "architecture": {
+    "frontend": {
+      "framework": "Next.js with React",
+      "deployment": "Vercel",
+      "routes": [
+        "/pipeline-integrity",
+        "/financials",
+        "/executive-summary"
+      ]
+    },
+    "backend_cms": {
+      "framework": "Strapi",
+      "deployment": "Heroku",
+      "database": "PostgreSQL (Heroku Postgres)"
+    },
+    "predictive_service": {
+      "framework": "FastAPI (Python)",
+      "deployment": "Heroku",
+      "base_path": "/api/v1"
+    }
+  },
+  "data_model": {
+    "content_types": [
+      {
+        "name": "Client",
+        "fields": ["client_id", "name", "segment", "region", "account_owner_id"],
+        "relations": ["projects"]
+      },
+      {
+        "name": "Project",
+        "fields": ["project_id", "client_id", "name", "type", "status", "complexity_score"],
+        "relations": ["client", "pipeline_deals"]
+      },
+      {
+        "name": "PipelineDeal",
+        "fields": ["deal_id", "project_id", "stage", "status", "probability", "deal_value", "currency", "expected_close_date", "recognition_start_month", "recognition_end_month", "sales_owner_id", "last_activity_at"],
+        "relations": ["project", "deal_milestones", "forecast_snapshots", "risk_flags"]
+      },
+      {
+        "name": "DealMilestone",
+        "fields": ["milestone_id", "deal_id", "sequence_order", "name", "scheduled_date", "amount", "recognition_month"],
+        "relations": ["deal", "billings"]
+      },
+      {
+        "name": "ForecastSnapshot",
+        "fields": ["snapshot_id", "deal_id", "snapshot_date", "scenario", "probability", "expected_amount", "expected_month"],
+        "relations": ["deal"]
+      },
+      {
+        "name": "Billing",
+        "fields": ["billing_id", "deal_id", "milestone_id", "invoice_date", "amount", "collected_date", "recognition_month"],
+        "relations": ["deal", "milestone"]
+      },
+      {
+        "name": "RiskFlag",
+        "fields": ["flag_id", "deal_id", "category", "severity", "status", "description"],
+        "relations": ["deal"]
+      },
+      {
+        "name": "User",
+        "fields": ["user_id", "name", "email", "role", "team"],
+        "relations": []
+      }
+    ]
+  },
+  "api_endpoints": {
+    "strapi": {
+      "base_path": "/api",
+      "endpoints": [
+        "GET /api/clients",
+        "POST /api/clients",
+        "GET /api/pipeline-deals",
+        "POST /api/pipeline-deals",
+        "GET /api/forecast-snapshots",
+        "POST /api/forecast-snapshots"
+      ]
+    },
+    "predictive_service": {
+      "base_path": "/api/v1",
+      "endpoints": [
+        "GET /api/v1/models/forecast/base",
+        "POST /api/v1/models/forecast/run",
+        "GET /api/v1/models/forecast/scenario/:scenario_id",
+        "GET /api/v1/models/risk/heatmap",
+        "GET /api/v1/models/variance/waterfall",
+        "GET /api/v1/health"
+      ]
+    }
+  },
+  "dashboard_features": {
+    "pipeline_integrity": {
+      "kpis": ["confirmed_revenue", "tentative_pipeline", "conversion_rate", "risk_exposure"],
+      "charts": ["stacked_area", "forecast_waterfall", "risk_heatmap"],
+      "tables": ["deals_table_with_filters"]
+    },
+    "financials": {
+      "kpis": ["billed_ytd", "collected_ytd", "outstanding_ar", "gross_margin"],
+      "charts": ["cash_flow", "receivables_aging", "margin_by_segment"],
+      "features": ["scenario_toggle"]
+    },
+    "executive_summary": {
+      "sections": ["top_line_metrics", "risk_posture", "operational_focus"],
+      "tables": ["top_at_risk_deals", "carryover_impact"],
+      "exports": ["pdf", "csv"]
+    }
+  },
+  "predictive_model": {
+    "inputs": ["historical_billings", "planned_monthly_amounts", "pipeline_attributes"],
+    "outputs": ["expected_revenue_timing", "probability_weighted_totals", "scenario_analysis"],
+    "techniques": ["stage_based_probability_rules", "monte_carlo_simulation"]
+  },
+  "status": "requirements_parsed",
+  "next_phase": "environment_provisioning"
+}
+
