@@ -38,7 +38,10 @@
 
 ### Vercel
 - ✅ Vercel CLI authenticated as `charenas-projects`
-- ✅ Project created: `double-v-frontend`
+- ✅ Project created: `frontend`
+- ✅ Project ID: `prj_fbDwMFTU4TY3kR1F4uJxFvDgmePF`
+- ✅ Org ID: `team_znfWLFKFRbVqjbqoZ1C1qI40`
+- ✅ Project linked locally
 - ⚠️ Deployment will work once frontend is scaffolded (no package.json yet)
 
 ### Heroku API Token
@@ -63,8 +66,8 @@ Add these secrets:
 
 **Vercel:**
 - `VERCEL_TOKEN` = (Get from Vercel dashboard → Settings → Tokens)
-- `VERCEL_ORG_ID` = (Get from Vercel project settings)
-- `VERCEL_PROJECT_ID` = (Get from Vercel project settings)
+- `VERCEL_ORG_ID` = `team_znfWLFKFRbVqjbqoZ1C1qI40`
+- `VERCEL_PROJECT_ID` = `prj_fbDwMFTU4TY3kR1F4uJxFvDgmePF`
 
 **Frontend Environment Variables (for build):**
 - `NEXT_PUBLIC_STRAPI_URL` = `https://double-v-strapi-dd98523889e0.herokuapp.com/api`
