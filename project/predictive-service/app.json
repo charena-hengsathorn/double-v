@@ -1,0 +1,70 @@
+{
+  "name": "Double V Predictive Service",
+  "description": "Python FastAPI service for revenue forecasting and risk analytics",
+  "repository": "https://github.com/charena-hengsathorn/double-v",
+  "logo": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png",
+  "keywords": ["python", "fastapi", "ml", "forecasting"],
+  "env": {
+    "STRAPI_URL": {
+      "required": true,
+      "description": "Strapi CMS API URL (e.g., https://your-strapi-app.herokuapp.com/api)"
+    },
+    "STRAPI_API_TOKEN": {
+      "required": true,
+      "description": "Strapi API token for service-to-service authentication"
+    },
+    "STRAPI_WEBHOOK_SECRET": {
+      "required": true,
+      "description": "Secret for verifying webhook HMAC signatures"
+    },
+    "DATABASE_URL": {
+      "required": false,
+      "description": "Optional direct database connection (if not using Strapi API)"
+    },
+    "REDIS_URL": {
+      "required": false,
+      "description": "Redis connection URL for caching"
+    },
+    "EXCHANGE_RATE_API_KEY": {
+      "required": false,
+      "description": "API key for currency exchange rates"
+    },
+    "LOG_LEVEL": {
+      "required": false,
+      "value": "INFO"
+    },
+    "ENVIRONMENT": {
+      "required": true,
+      "value": "production"
+    },
+    "CORS_ORIGINS": {
+      "required": true,
+      "description": "Comma-separated list of allowed CORS origins",
+      "value": "https://your-frontend.vercel.app"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "scheduler:standard"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "python -m pip install --upgrade pip && pip install -r requirements.txt"
+  }
+}
+

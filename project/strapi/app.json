@@ -1,0 +1,95 @@
+{
+  "name": "Double V Strapi CMS",
+  "description": "Headless CMS for pipeline deals, forecasts, and financial data",
+  "repository": "https://github.com/charena-hengsathorn/double-v",
+  "logo": "https://strapi.io/assets/images/logo-dark.svg",
+  "keywords": ["strapi", "cms", "headless", "api"],
+  "env": {
+    "DATABASE_CLIENT": {
+      "required": true,
+      "value": "postgres"
+    },
+    "DATABASE_HOST": {
+      "required": true,
+      "description": "PostgreSQL database host"
+    },
+    "DATABASE_PORT": {
+      "required": true,
+      "value": "5432"
+    },
+    "DATABASE_NAME": {
+      "required": true,
+      "description": "PostgreSQL database name"
+    },
+    "DATABASE_USERNAME": {
+      "required": true,
+      "description": "PostgreSQL database username"
+    },
+    "DATABASE_PASSWORD": {
+      "required": true,
+      "description": "PostgreSQL database password"
+    },
+    "DATABASE_SSL": {
+      "required": false,
+      "value": "true"
+    },
+    "JWT_SECRET": {
+      "required": true,
+      "description": "Secret key for JWT token generation",
+      "generator": "secret"
+    },
+    "ADMIN_JWT_SECRET": {
+      "required": true,
+      "description": "Secret key for admin JWT",
+      "generator": "secret"
+    },
+    "APP_KEYS": {
+      "required": true,
+      "description": "Application keys (comma-separated)",
+      "generator": "secret"
+    },
+    "API_TOKEN_SALT": {
+      "required": true,
+      "generator": "secret"
+    },
+    "TRANSFER_TOKEN_SALT": {
+      "required": true,
+      "generator": "secret"
+    },
+    "NODE_ENV": {
+      "required": true,
+      "value": "production"
+    },
+    "HOST": {
+      "required": false,
+      "value": "0.0.0.0"
+    },
+    "PORT": {
+      "required": false,
+      "value": "1337"
+    },
+    "STRAPI_WEBHOOK_SECRET": {
+      "required": true,
+      "description": "Secret for webhook HMAC signatures",
+      "generator": "secret"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    "heroku-postgresql:mini"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "npm run build"
+  }
+}
+

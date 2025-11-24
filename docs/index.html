@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Double V Diagrams</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --bg: #f8fafc;
+        --text: #0f172a;
+        --panel: #ffffff;
+        --border: #e2e8f0;
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.12);
+        --shadow: rgba(15, 23, 42, 0.12);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #f8fafc 100%);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 1.5rem 2rem;
+        backdrop-filter: blur(12px);
+        background: rgba(248, 250, 252, 0.8);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        letter-spacing: 0.04em;
+      }
+
+      .lang-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .lang-switch button {
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        color: var(--text);
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+      }
+
+      .lang-switch button:hover,
+      .lang-switch button:focus-visible {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        gap: 2rem;
+        padding: 2rem;
+      }
+
+      .sidebar {
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .section-title {
+        font-size: 0.9rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(15, 23, 42, 0.6);
+      }
+
+      .tab-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      button.tab {
+        all: unset;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      button.tab:hover,
+      button.tab:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--accent);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+        background: var(--accent-soft);
+      }
+
+      button.tab.active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .viewer {
+        flex: 1;
+        backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        padding: 2rem;
+        overflow: auto;
+        box-shadow: 0 16px 40px var(--shadow);
+      }
+
+      .viewer.empty {
+        display: grid;
+        place-items: center;
+        color: rgba(15, 23, 42, 0.55);
+        font-size: 1.05rem;
+        letter-spacing: 0.02em;
+      }
+
+      .diagram {
+        min-width: 640px;
+      }
+
+      .doc-content {
+        max-width: 880px;
+        margin: 0 auto;
+        color: var(--text);
+      }
+
+      .doc-content h1,
+      .doc-content h2,
+      .doc-content h3 {
+        color: #0f172a;
+      }
+
+      .doc-content pre {
+        background: #e2e8f0;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+      }
+
+      .doc-content code {
+        background: rgba(37, 99, 235, 0.12);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.3rem;
+      }
+
+      @media (max-width: 960px) {
+        main {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .section {
+          flex: 1 1 280px;
+        }
+
+        .viewer {
+          min-height: 420px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Double V Diagram Navigator</h1>
+    </header>
+    <main>
+      <aside class="sidebar">
+        <div class="section">
+          <div class="section-title" data-i18n="section.diagrams">Diagrams</div>
+          <div id="diagram-tabs" class="tab-list">
+            <button class="tab" data-type="diagram" data-key="er" data-label="diagram.er">
+              Entity Relationship Map
+            </button>
+            <button class="tab" data-type="diagram" data-key="forecast" data-label="diagram.forecast">
+              Forecast Recompute Sequence
+            </button>
+            <button class="tab" data-type="diagram" data-key="dashboard" data-label="diagram.dashboard">
+              Dashboard Retrieval Sequence
+            </button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title" data-i18n="section.documents">Documents</div>
+          <div id="doc-tabs" class="tab-list">
+            <button class="tab" data-type="doc" data-key="scope" data-label="doc.scope">
+              Strategic Scope Overview
+            </button>
+            <button class="tab" data-type="doc" data-key="techScope" data-label="doc.techScope">
+              Technical Scope
+            </button>
+            <button class="tab" data-type="doc" data-key="visualScope" data-label="doc.visualScope">
+              Visual Scope & Diagrams
+            </button>
+            <button class="tab" data-type="doc" data-key="projectPlan" data-label="doc.projectPlan">
+              Project Plan
+            </button>
+            <button class="tab" data-type="doc" data-key="aiPlan" data-label="doc.aiPlan">
+              AI Execution Plan
+            </button>
+            <button class="tab" data-type="doc" data-key="wireframe" data-label="doc.wireframe">
+              Text Wireframe
+            </button>
+          </div>
+        </div>
+      </aside>
+      <section id="viewer" class="viewer empty">
+        Select a diagram or document to preview it here.
+      </section>
+    </main>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+      import { marked } from "https://cdn.jsdelivr.net/npm/marked@11.1.0/+esm";
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "default",
+        securityLevel: "loose",
+      });
+
+      const diagrams = {
+        er: `erDiagram
+    CLIENT ||--o{ PROJECT : hosts
+    PROJECT ||--o{ PIPELINE_DEAL : contains
+    PIPELINE_DEAL ||--o{ DEAL_MILESTONE : schedules
+    DEAL_MILESTONE ||--o{ BILLING : invoices
+    PIPELINE_DEAL ||--o{ FORECAST_SNAPSHOT : records
+    PIPELINE_DEAL ||--o{ RISK_FLAG : flags
+    USER ||--o{ PIPELINE_DEAL : owns
+    USER ||--o{ RISK_FLAG : manages`,
+        forecast: `sequenceDiagram
+    participant FE as Next.js Frontend
+    participant STRAPI as Strapi CMS
+    participant PY as Python Predictive Service
+    participant DB as PostgreSQL
+
+    FE->>STRAPI: PATCH /pipeline-deals/:id (update status/probability)
+    STRAPI-->>DB: Persist deal update
+    STRAPI->>PY: POST /models/forecast/run (webhook)
+    PY->>STRAPI: GET /pipeline-deals?filters[...] (fetch latest data)
+    PY->>DB: (optional read replica)
+    PY-->>PY: Run probability model & simulations
+    PY->>STRAPI: POST /forecast-snapshots (write results)
+    FE->>STRAPI: GET /forecast-snapshots?scenario=base
+    STRAPI-->>FE: Updated forecast dataset`,
+        dashboard: `sequenceDiagram
+    participant USER as Exec User
+    participant FE as Next.js Frontend
+    participant STRAPI as Strapi CMS
+    participant PY as Predictive Service
+
+    USER->>FE: Open /pipeline-integrity
+    FE->>STRAPI: GET /pipeline-deals?populate=milestones,riskFlags
+    STRAPI-->>FE: Deal + milestone data
+    FE->>PY: GET /models/risk/heatmap
+    PY-->>FE: Risk heatmap dataset
+    FE->>STRAPI: GET /forecast-snapshots?scenario=base
+    STRAPI-->>FE: Snapshot timeline
+    FE-->>USER: Render charts and tables`,
+      };
+
+      const translations = {
+        en: {
+          title: "Double V Diagram Navigator",
+          viewerEmpty: "Select a diagram or document to preview it here.",
+          "section.diagrams": "Diagrams",
+          "section.documents": "Documents",
+          "diagram.er": "Entity Relationship Map",
+          "diagram.forecast": "Forecast Recompute Sequence",
+          "diagram.dashboard": "Dashboard Retrieval Sequence",
+          "doc.scope": "Strategic Scope Overview",
+          "doc.techScope": "Technical Scope",
+          "doc.visualScope": "Visual Scope & Diagrams",
+          "doc.projectPlan": "Project Plan",
+          "doc.aiPlan": "AI Execution Plan",
+          "doc.wireframe": "Text Wireframe",
+          languageToggle: "ENG",
+        },
+        th: {
+          title: "ตัวนำทางผังและเอกสาร Double V",
+          viewerEmpty: "เลือกรูปผังหรือเอกสารเพื่อแสดงผลที่นี่",
+          "section.diagrams": "ผังภาพ",
+          "section.documents": "เอกสาร",
+          "diagram.er": "แผนผังความสัมพันธ์ข้อมูล (ER)",
+          "diagram.forecast": "ลำดับการคำนวณพยากรณ์",
+          "diagram.dashboard": "ลำดับการโหลดแดชบอร์ด",
+          "doc.scope": "สโคปเชิงกลยุทธ์",
+          "doc.techScope": "สโคปด้านเทคนิค",
+          "doc.visualScope": "สโคปภาพรวมและไดอะแกรม",
+          "doc.projectPlan": "แผนโครงการ",
+          "doc.aiPlan": "แผนปฏิบัติงานของ AI",
+          "doc.wireframe": "ไวร์เฟรมตัวอักษร",
+          languageToggle: "TH",
+        },
+      };
+
+      let currentLang = "en";
+
+      const documents = {
+        scope: {
+          title: "Strategic Scope Overview",
+          markdown: String.raw`# Executive Dashboard Scope
+
+## Vision
+Deliver two focused dashboards backed by a shared predictive revenue model:
+- **Pipeline Integrity app** to monitor conversion health and risk exposure.
+- **Financials app** to evaluate cash flow and overall revenue outlook.
+
+## Objectives
+- Translate current-year billing into next-year revenue projections.
+- Quantify risk by probability-weighting “to be confirm” deals and monitoring slippage.
+- Provide executives with rapid insight via a concise summary report.
+
+## Dashboard Concepts
+- **Revenue Outlook (stacked area)**: monthly totals with confirmed vs. tentative bands.
+- **Forecast Waterfall**: shows how deal movements change the latest projection.
+- **Conversion Risk Heatmap**: stage × probability view highlighting at-risk revenue.
+- **Stage Funnel & Alerts**: track counts/values per stage, surface overdue updates.
+- **Scenario Toggles**: best/base/worst cases driven by probability assumptions.
+- **Financials Page**: cash flow timing, billed vs. collected view, receivables, margins.
+
+## Predictive Model Notes
+- Inputs: historical billings, planned monthly amounts, current pipeline attributes.
+- Outputs: expected revenue timing, probability-weighted totals, scenario analysis.
+- Techniques: stage-based probability rules plus Monte Carlo for high-value deals.
+
+## Deal Attributes (Data Fields)
+- Lifecycle: stage, status, probability, expected close date, recognition window, last activity.
+- Commercials: deal value, billing milestones, payment terms, currency, margin estimate.
+- Client context: client segment, region, account owner, historic conversion rate.
+- Delivery risk: resource readiness, complexity score, dependency flags, prior slippage.
+- Metadata: responsible exec, forecast notes, risk flags.
+
+## Data Model (Initial Tables)
+- **clients**: \`client_id\`, name, segment, region.
+- **projects**: \`project_id\`, \`client_id\`, name, type, complexity_score.
+- **pipeline_deals**: \`deal_id\`, \`project_id\`, stage, status, probability, deal_value, currency, expected_close_date, expected_recognition_start, expected_recognition_end, owner_id, notes.
+- **deal_milestones**: \`milestone_id\`, \`deal_id\`, sequence, description, scheduled_date, amount, recognition_rule.
+- **forecast_snapshots**: snapshot_date, \`deal_id\`, stage, probability, expected_recognition_month, expected_amount.
+- **billings**: \`billing_id\`, \`deal_id\`, invoice_date, amount, collected_date, recognition_month.
+- **users**: \`user_id\`, name, role.
+- **risk_flags** (optional): \`flag_id\`, \`deal_id\`, category, severity, owner, status.
+
+## Input Interfaces
+- Deal creation/edit form covering lifecycle, commercial, and risk data.
+- Milestone schedule editor (grid view).
+- Probability & forecast override panel writing to snapshots.
+- Status update actions (stage changes, confirm toggles).
+- Risk flag capture/resolution workflow.
+- Financial data entry/import for billings and collections.
+
+## Executive Summary Deliverable
+- Top-line metrics: confirmed revenue, to-be-confirmed pipeline, base-case projection.
+- Risk posture: quantified exposure, timing concentration, top at-risk deals.
+- Operational focus: priority actions to accelerate, mitigate slippage, or diversify.
+- Appendices: confirmed schedule, unconfirmed pipeline table with probabilities, carryover impact analysis.`,
+        },
+        techScope: {
+          title: "Technical Scope",
+          markdown: String.raw`# Tech Scope Overview
+
+## Stack Summary
+- **Frontend**: React + Next.js for routing, shared layouts, and reusable data visualizations.
+- **Backend CMS**: Strapi as headless API for pipeline data, forecasting metadata, and role-based permissions.
+- **Predictive Services**: Python (FastAPI/Flask) for forecast modeling, scenario simulations, and risk analytics.
+- **Database**: PostgreSQL managed via Strapi; materialized views for performance-sensitive aggregates.
+
+## Architecture & Data Flow
+1. Strapi stores source-of-truth entities (clients, projects, pipeline deals, milestones, billings, snapshots, risk flags).
+2. Python predictive service pulls data from Strapi, computes forecasts (base, scenario, risk metrics), and returns results via REST endpoints or writes back snapshots.
+3. Next.js frontends fetch Strapi + predictive outputs to render dashboards; scenario selections trigger API calls to Python service.
+4. Nightly batch jobs (Python) refresh forecasts and snapshots, keeping demo data current.
+
+## Strapi Content Types (Tables)
+- \`Client\`: client_id, name, segment, region.
+- \`Project\`: project_id, client (relation), type, complexity_score.
+- \`PipelineDeal\`: deal_id, project (relation), stage, status, probability, deal_value, currency, expected_close_date, recognition_window, owner, notes.
+- \`DealMilestone\`: milestone_id, deal (relation), sequence, description, scheduled_date, amount, recognition_rule.
+- \`ForecastSnapshot\`: snapshot_date, deal (relation), stage, probability, expected_recognition_month, expected_amount, scenario_label.
+- \`Billing\`: billing_id, deal (relation), invoice_date, amount, collected_date, recognition_month.
+- \`RiskFlag\`: flag_id, deal (relation), category, severity, owner, status, comment.
+- \`User\`: user_id, name, role (sales, finance, exec).
+
+## Predictive Service Endpoints
+- \`GET /forecast/base\`: probability-weighted revenue outlook; returns monthly totals by confidence tier.
+- \`POST /forecast/scenario\`: inputs adjustments (probabilities, timing) → returns scenario metrics.
+- \`GET /risk/heatmap\`: aggregates deals by stage × probability; includes top at-risk list.
+- \`GET /forecast/waterfall\`: compares current snapshot vs. prior snapshot for change analysis.
+- Scheduled job: \`POST /forecast/recompute\` (internal cron) to refresh base projections.
+
+## Frontend Routes & Views
+- \`/pipeline-integrity\`
+  - KPI header (confirmed revenue, tentative pipeline, expected conversion rate).
+  - Stacked area chart (confirmed vs tentative by month).
+  - Forecast waterfall showing delta vs previous snapshot.
+  - Risk heatmap (stage × probability) and deal table with filters/flags.
+- \`/financials\`
+  - Cash flow chart (billed vs collected).
+  - Receivables aging table and margin summary.
+  - Scenario toggle connected to predictive service outputs.
+- \`/executive-summary\`
+  - Narrative cards summarizing outlook, risks, and recommended actions.
+  - Compact tables (top at-risk deals, carryover impacts) with export option.
+
+## Demo Readiness Checklist
+- Seed Strapi with sample clients, deals, milestones, billings, and snapshots.
+- Implement API connectors in Next.js for Strapi and predictive service.
+- Build reusable chart components (stacked area, waterfall, heatmap, funnel).
+- Wire scenario toggles to predictive endpoints; handle loading states.
+- Provide export functionality (CSV/PDF) for executive summary.
+- Set up nightly forecast recompute job and notification hooks (optional).
+
+## Data Model Brainstorm
+- **Client**: \`client_id\`, \`name\`, \`segment\`, \`region\`, \`account_owner_id\`, \`lifetime_value\`, timestamps. Relations to projects and deals; optional many-to-many tags.
+- **Project**: \`project_id\`, \`client_id\`, \`name\`, \`type\`, \`status\`, \`complexity_score\`, \`start_date\`, \`end_date\`, \`notes\`.
+- **PipelineDeal**: \`deal_id\`, \`project_id\`, \`stage\`, \`status\`, \`probability\`, \`deal_value\`, \`currency\`, \`expected_close_date\`, \`recognition_start_month\`, \`recognition_end_month\`, \`sales_owner_id\`, \`delivery_owner_id\`, \`source_channel\`, \`confidence_override\`, \`last_activity_at\`, \`forecast_notes\`.
+- **DealMilestone**: \`milestone_id\`, \`deal_id\`, \`sequence_order\`, \`name\`, \`scheduled_date\`, \`amount\`, \`recognition_month\`, \`billing_type\`, \`collection_terms\`.
+- **ForecastSnapshot**: \`snapshot_id\`, \`deal_id\`, \`snapshot_date\`, \`scenario\`, \`probability\`, \`expected_amount\`, \`expected_month\`, \`expected_margin\`, \`model_version\`, \`author_id\`.
+- **Billing**: \`billing_id\`, \`deal_id\`, \`milestone_id\`, \`invoice_number\`, \`invoice_date\`, \`amount\`, \`currency\`, \`collected_date\`, \`recognition_month\`, \`status\`, \`payment_reference\`.
+- **RiskFlag**: \`flag_id\`, \`deal_id\`, \`category\`, \`severity\`, \`description\`, \`owner_id\`, \`created_at\`, \`resolved_at\`, \`resolution_notes\`.
+- **User**: \`user_id\`, \`name\`, \`email\`, \`role\`, \`team\`, \`active\`.
+- Optional lookup/support tables: \`Stage\`, \`ProbabilityRule\`, \`ScenarioPreset\`, \`Tag\`, \`ActivityLog\`.
+
+## API Endpoint Brainstorm
+### Strapi (REST/GraphQL)
+- \`GET /clients\`, \`POST /clients\`, \`GET /clients/:id\` with expand options for projects/deals.
+- \`GET /projects\`, \`POST /projects\`, \`PATCH /projects/:id\`.
+- \`GET /pipeline-deals\` with filter/query params; \`POST\`/\`PATCH\` for CRUD.
+- Nested: \`GET /pipeline-deals/:id/milestones\`, \`POST /pipeline-deals/:id/milestones\`.
+- \`GET /forecast-snapshots\` (filter by scenario, sort by date), \`POST\` for manual overrides or model writes.
+- \`GET /billings\` (filter by status), \`POST /billings\`.
+- \`GET /risk-flags\`, \`PATCH /risk-flags/:id\` to resolve.
+- Auth endpoints leveraging Strapi roles/permissions.
+
+### Predictive Python Service
+- \`POST /models/forecast/run\` to trigger recompute (accepts scenario overrides).
+- \`GET /models/forecast/base\` returning probability-weighted monthly totals.
+- \`GET /models/forecast/scenario/:scenario_id\` for stored scenario outputs.
+- \`POST /models/forecast/simulate\` for Monte Carlo adjustments.
+- \`GET /models/risk/heatmap\` delivering stage × probability data plus top risks.
+- \`GET /models/variance/waterfall\` comparing latest vs prior snapshot contributions.
+- \`POST /models/ingest/strapi-sync\` for webhook or scheduled sync jobs.
+- \`GET /health\` for monitoring status.`,
+        },
+        visualScope: {
+          title: "Visual Scope & Diagrams",
+          markdown: String.raw`# Visual Scope
+
+## Entity Relationship Overview
+
+\`\`\`mermaid
+erDiagram
+    CLIENT ||--o{ PROJECT : hosts
+    PROJECT ||--o{ PIPELINE_DEAL : contains
+    PIPELINE_DEAL ||--o{ DEAL_MILESTONE : schedules
+    DEAL_MILESTONE ||--o{ BILLING : invoices
+    PIPELINE_DEAL ||--o{ FORECAST_SNAPSHOT : records
+    PIPELINE_DEAL ||--o{ RISK_FLAG : flags
+    USER ||--o{ PIPELINE_DEAL : owns
+    USER ||--o{ RISK_FLAG : manages
+
+    CLIENT {
+      uuid client_id
+      string name
+      string segment
+      string region
+      uuid account_owner_id
+    }
+
+    PROJECT {
+      uuid project_id
+      uuid client_id
+      string name
+      string type
+      string status
+      int complexity_score
+    }
+
+    PIPELINE_DEAL {
+      uuid deal_id
+      uuid project_id
+      string stage
+      string status
+      float probability
+      decimal deal_value
+      date expected_close_date
+      date recognition_start_month
+      date recognition_end_month
+    }
+
+    DEAL_MILESTONE {
+      uuid milestone_id
+      uuid deal_id
+      int sequence_order
+      date scheduled_date
+      decimal amount
+    }
+
+    BILLING {
+      uuid billing_id
+      uuid milestone_id
+      uuid deal_id
+      date invoice_date
+      decimal amount
+      date collected_date
+    }
+
+    FORECAST_SNAPSHOT {
+      uuid snapshot_id
+      uuid deal_id
+      date snapshot_date
+      string scenario
+      float probability
+      decimal expected_amount
+      date expected_month
+    }
+
+    RISK_FLAG {
+      uuid flag_id
+      uuid deal_id
+      string category
+      string severity
+      string status
+    }
+
+    USER {
+      uuid user_id
+      string name
+      string role
+    }
+\`\`\`
+
+## Data Flow Sequence (Forecast Recompute)
+
+\`\`\`mermaid
+sequenceDiagram
+    participant FE as Next.js Frontend
+    participant STRAPI as Strapi CMS
+    participant PY as Python Predictive Service
+    participant DB as PostgreSQL
+
+    FE->>STRAPI: PATCH /pipeline-deals/:id (update status/probability)
+    STRAPI-->>DB: Persist deal update
+    STRAPI->>PY: POST /models/forecast/run (webhook)
+    PY->>STRAPI: GET /pipeline-deals?filters[...] (fetch latest data)
+    PY->>DB: (optional direct read replicas)
+    PY-->>PY: Run probability model & simulations
+    PY->>STRAPI: POST /forecast-snapshots (write results)
+    FE->>STRAPI: GET /forecast-snapshots?scenario=base
+    STRAPI-->>FE: Updated forecast dataset
+\`\`\`
+
+## Dashboard Data Retrieval Sequence
+
+\`\`\`mermaid
+sequenceDiagram
+    participant USER as Exec User
+    participant FE as Next.js Frontend
+    participant STRAPI as Strapi CMS
+    participant PY as Predictive Service
+
+    USER->>FE: Open /pipeline-integrity
+    FE->>STRAPI: GET /pipeline-deals?populate=milestones,riskFlags
+    STRAPI-->>FE: Deal + milestone data
+    FE->>PY: GET /models/risk/heatmap
+    PY-->>FE: Risk heatmap dataset
+    FE->>STRAPI: GET /forecast-snapshots?scenario=base
+    STRAPI-->>FE: Snapshot timeline
+    FE-->>USER: Render stacked area, waterfall, heatmap, tables
+\`\`\`
+
+## Integration Notes
+- Mermaid diagrams illustrate relationships and sequences; adjust attributes as schema evolves.
+- Forecast recompute path highlights webhook-triggered model execution.
+- Dashboard retrieval flow separates Strapi CRUD data from predictive analytics endpoints.`,
+        },
+        projectPlan: {
+          title: "Project Plan",
+          markdown: String.raw`# Project Plan
+
+## End-to-End Steps
+
+1. **Data & Requirements Refinement**
+   - Validate field definitions for all content types (clients, deals, milestones, etc.).
+   - Confirm probability rules, scenario assumptions, and risk categories with stakeholders.
+   - **Owner:** Product Lead with Finance Stakeholder
+   - **Dependencies:** None
+
+2. **Backend Setup (Strapi + PostgreSQL)**
+   - Scaffold Strapi project and configure database connection.
+   - Implement content types, relations, and role-based permissions.
+   - Seed initial datasets for demo (clients, deals, snapshots).
+   - **Owner:** Backend Engineer
+   - **Dependencies:** Phase 1 approved requirements
+
+3. **Predictive Service Foundation (Python)**
+   - Stand up FastAPI/Flask project with core structure.
+   - Create ingestion layer to pull data from Strapi.
+   - Define endpoints: base forecast, scenario, risk heatmap, waterfall, recompute hook.
+   - **Owner:** ML/Platform Engineer
+   - **Dependencies:** Phase 1 requirements, Phase 2 Strapi API contract
+
+4. **Model Development**
+   - Prototype probability logic and Monte Carlo simulations.
+   - Calibrate models with historical billing data.
+   - Automate snapshot writing and webhook-triggered recompute.
+   - **Owner:** Data Scientist
+   - **Dependencies:** Phase 3 service scaffolding and data access
+
+5. **Frontend Infrastructure (Next.js)**
+   - Configure routing, layouts, and authentication flow.
+   - Build API layer for Strapi and predictive service.
+   - Create shared chart components (stacked area, waterfall, heatmap, tables).
+   - **Owner:** Frontend Lead
+   - **Dependencies:** Phases 2–3 API availability (mock responses acceptable initially)
+
+6. **Dashboard Implementation**
+   - Pipeline Integrity dashboard with KPIs, charts, filters.
+   - Financials dashboard with cash flow, receivables, scenario toggle.
+   - Executive Summary page with narrative cards and export actions.
+   - **Owner:** Frontend Lead with UX Designer
+   - **Dependencies:** Phase 5 infrastructure, Phase 4 initial model outputs
+
+7. **Integration & Workflow Features**
+   - Wire Strapi webhooks to predictive service recompute endpoint.
+   - Implement status updates, risk flag management, snapshot overrides.
+   - Add nightly batch job and optional notifications.
+   - **Owner:** Integration Engineer
+   - **Dependencies:** Phases 2–4 services, Phase 6 UI touchpoints
+
+8. **Testing & Validation**
+   - Unit/integration tests for APIs and model outputs.
+   - Frontend acceptance tests using seeded data.
+   - Stakeholder review sessions for feedback and approval.
+   - **Owner:** QA Lead with Product Lead
+   - **Dependencies:** Phases 2–7 feature completion
+
+9. **Documentation & Demo Preparation**
+   - Refresh scope docs, diagrams, and usage guides in \`/docs\`.
+   - Prepare curated demo dataset and walkthrough script.
+   - Package or deploy demo environment.
+   - **Owner:** Product Operations
+   - **Dependencies:** Phase 8 sign-off
+
+10. **Deployment & Handover**
+    - Set up CI/CD pipelines for Strapi, Python service, and Next.js app.
+    - Configure monitoring, health checks, and backups.
+    - Train end users, deliver documentation, and transition to operations.
+    - **Owner:** DevOps Lead
+    - **Dependencies:** Phase 9 final documentation and demo approval`,
+        },
+        aiPlan: {
+          title: "AI Execution Plan",
+          markdown: String.raw`# AI Execution Plan
+
+## Operating Assumptions
+- AI agent has programmatic access to repository, Strapi admin, predictive service runtime, and deployment environment.
+- Human stakeholders remain in the loop for requirement validation, model calibration sign-off, and production approval.
+- Agent follows project phases defined in \`project-plan.md\` but adapts dynamically based on task outcomes.
+
+## Phase Playbook
+
+1. **Requirement Intake**
+   - Parse existing scope documents (\`scope.md\`, \`tech-scope.md\`, \`visual-scope.md\`, \`project-plan.md\`).
+   - Confirm open questions with stakeholders via generated summaries or prompts.
+   - Produce structured requirement JSON for downstream automation.
+   - *Human Review Gate:* product/finance approval on requirement summary.
+
+2. **Environment Provisioning**
+   - Spin up local containers or cloud workspaces for Strapi, PostgreSQL, Python service, and Next.js frontends.
+   - Configure environment variables, secrets, and baseline CI workflows.
+   - Verify health endpoints and connectivity between services.
+
+3. **Data Model Implementation (Strapi)**
+   - Programmatically create content types, components, and relations via Strapi APIs or configuration files.
+   - Generate migration scripts and seed data fixtures.
+   - Validate with snapshot tests and schema export.
+   - *Human Review Gate:* confirm content structure aligns with business terminology.
+
+4. **Predictive Service Build**
+   - Scaffold FastAPI/Flask project, implement base endpoints with stubbed logic.
+   - Connect to Strapi via API client, manage authentication tokens securely.
+   - Implement orchestration for webhook handling and snapshot writing.
+   - Write unit tests for endpoint contract compliance.
+
+5. **Model Development & Calibration**
+   - Ingest historical billing datasets; clean and feature-engineer.
+   - Prototype probability models (stage-based rules, ML classifiers, Monte Carlo).
+   - Run validation experiments, generate evaluation reports.
+   - *Human Review Gate:* finance leader approves model assumptions and performance metrics.
+
+6. **Frontend Automation**
+   - Generate Next.js pages, shared layout, and API hooks using project scaffolding scripts.
+   - Integrate chart components (Mermaid previews, Recharts, or D3) with sample data.
+   - Implement state management for scenario toggles and data fetching.
+   - Add automated visual regression tests or Storybook snapshots.
+
+7. **Workflow Integration**
+   - Configure Strapi webhooks to trigger predictive service recompute.
+   - Implement retry logic, logging, and alerting for failed syncs.
+   - Ensure frontend surfaces status/error states from backend services.
+
+8. **Quality Assurance**
+   - Run full test suite (backend, frontend, model validation).
+   - Execute synthetic user journeys to confirm dashboards render correctly.
+   - Compile QA report with outstanding issues for stakeholder review.
+   - *Human Review Gate:* sign-off on release candidate.
+
+9. **Documentation & Knowledge Transfer**
+   - Auto-generate API docs (OpenAPI/Swagger), data dictionaries, and user guides.
+   - Update diagrams via Mermaid sources and regenerate PDFs/HTML previews.
+   - Prepare demo scripts, sample datasets, and onboarding instructions.
+
+10. **Deployment & Monitoring**
+   - Set up CI/CD pipelines, infrastructure as code, and environment promotion (dev → staging → prod).
+   - Configure monitoring dashboards, alert rules, and backup schedules.
+   - Final handover report summarizing system architecture, runbooks, and future automation hooks.
+
+## Agent Controls & Safety
+- Maintain audit logs of automated changes (commit messages, PRs, deployment notes).
+- Request human approval before modifying production data or deploying to production.
+- Use feature flags for gradual rollout; default to read-only mode until tests pass.
+- Escalate anomalies or blocked tasks to human supervisors with context and suggestions.
+
+## Tooling Stack for Automation
+- GitHub/GitLab API for repository operations.
+- Strapi REST/GraphQL API for schema and content management.
+- PostgreSQL migrations via Prisma/Knex or native SQL scripts.
+- FastAPI test client & pytest for predictive service validation.
+- Playwright/Cypress for frontend E2E tests; Jest/React Testing Library for unit tests.
+- CI pipelines via GitHub Actions or GitLab CI; infrastructure via Terraform or Pulumi.
+
+## Success Criteria
+- All phases completed with documented approvals at each human review gate.
+- Dashboards and APIs deliver accurate data consistent with approved models.
+- Deployment pipelines repeatable; monitoring and runbooks in place.
+- Stakeholders sign off on AI agent handover package.`,
+        },
+      };
+
+      const viewer = document.getElementById("viewer");
+      const headerTitle = document.querySelector("header h1");
+      const langButton = document.createElement("button");
+      langButton.className = "lang-toggle";
+      langButton.setAttribute("type", "button");
+      langButton.textContent = translations[currentLang].languageToggle;
+      const header = document.querySelector("header");
+      const langWrapper = document.createElement("div");
+      langWrapper.className = "lang-switch";
+      langWrapper.appendChild(langButton);
+      header.appendChild(langWrapper);
+
+      const allTabs = document.querySelectorAll("button.tab");
+      const sectionTitles = document.querySelectorAll(".section-title");
+
+      function applyLanguage(lang) {
+        currentLang = lang;
+        const t = translations[lang];
+        headerTitle.textContent = t.title;
+        const hasDiagram = viewer.querySelector(".diagram");
+        const hasDoc = viewer.querySelector(".doc-content");
+        if (!hasDiagram && !hasDoc) {
+          viewer.classList.add("empty");
+          viewer.textContent = t.viewerEmpty;
+        } else {
+          viewer.classList.remove("empty");
+        }
+        sectionTitles.forEach((titleEl) => {
+          const key = titleEl.dataset.i18n;
+          if (key && t[key]) {
+            titleEl.textContent = t[key];
+          }
+        });
+        allTabs.forEach((tab) => {
+          const labelKey = tab.dataset.label;
+          if (labelKey && t[labelKey]) {
+            tab.textContent = t[labelKey];
+          }
+        });
+        langButton.textContent = lang === "en" ? "ENG" : "TH";
+      }
+
+      function resetActive() {
+        allTabs.forEach((btn) => btn.classList.remove("active"));
+      }
+
+      async function renderDiagram(key) {
+        const definition = diagrams[key];
+        if (!definition) {
+          viewer.textContent = "Diagram definition not found.";
+          viewer.classList.add("empty");
+          return;
+        }
+
+        viewer.classList.remove("empty");
+        viewer.innerHTML = `<pre class="mermaid diagram">${definition}</pre>`;
+
+        try {
+          await mermaid.run({ querySelector: ".diagram" });
+        } catch (error) {
+          console.error("Mermaid render failed:", error);
+          viewer.innerHTML = `<div>Failed to render diagram. Check console for details.</div>`;
+        }
+      }
+
+      async function renderDocument(key) {
+        const doc = documents[key];
+        if (!doc) {
+          viewer.textContent = "Document not found.";
+          viewer.classList.add("empty");
+          return;
+        }
+
+        try {
+          const html = marked.parse(doc.markdown, { mangle: false, headerIds: false });
+          viewer.classList.remove("empty");
+          viewer.innerHTML = `<article class="doc-content">${html}</article>`;
+        } catch (error) {
+          console.error("Document render failed:", error);
+          viewer.classList.remove("empty");
+          viewer.innerHTML = `<div>Unable to render document.</div>`;
+        }
+      }
+
+      allTabs.forEach((tab) => {
+        tab.addEventListener("click", async () => {
+          resetActive();
+          tab.classList.add("active");
+          const type = tab.dataset.type;
+          const key = tab.dataset.key;
+
+          if (type === "diagram") {
+            await renderDiagram(key);
+          } else if (type === "doc") {
+            await renderDocument(key);
+          }
+        });
+      });
+
+      langButton.addEventListener("click", () => {
+        const nextLang = currentLang === "en" ? "th" : "en";
+        applyLanguage(nextLang);
+      });
+
+      applyLanguage(currentLang);
+    </script>
+  </body>
+</html>
+
+
