@@ -1,30 +1,10 @@
 {
   "version": 2,
-  "name": "double-v-frontend",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "env": {
-    "NEXT_PUBLIC_STRAPI_URL": {
-      "required": true,
-      "description": "Strapi CMS API URL"
-    },
-    "NEXT_PUBLIC_PREDICTIVE_SERVICE_URL": {
-      "required": true,
-      "description": "Predictive service API URL"
-    },
-    "NEXT_PUBLIC_APP_URL": {
-      "required": true,
-      "description": "Frontend application URL"
-    }
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/:path*",
