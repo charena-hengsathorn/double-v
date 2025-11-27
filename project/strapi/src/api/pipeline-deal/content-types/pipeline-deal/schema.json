@@ -1,0 +1,115 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pipeline_deals",
+  "info": {
+    "singularName": "pipeline-deal",
+    "pluralName": "pipeline-deals",
+    "displayName": "Pipeline Deal",
+    "description": "Sales pipeline deals with forecasting data"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "deal_id": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "stage": {
+      "type": "enumeration",
+      "enum": ["prospecting", "qualification", "proposal", "negotiation", "closed-won", "closed-lost"],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "won", "lost", "stalled"],
+      "required": true
+    },
+    "probability": {
+      "type": "decimal",
+      "min": 0,
+      "max": 100,
+      "required": true
+    },
+    "deal_value": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "required": false
+    },
+    "expected_close_date": {
+      "type": "date",
+      "required": false
+    },
+    "recognition_start_month": {
+      "type": "date",
+      "required": false
+    },
+    "recognition_end_month": {
+      "type": "date",
+      "required": false
+    },
+    "sales_owner_id": {
+      "type": "string",
+      "required": false
+    },
+    "delivery_owner_id": {
+      "type": "string",
+      "required": false
+    },
+    "source_channel": {
+      "type": "string",
+      "required": false
+    },
+    "confidence_override": {
+      "type": "decimal",
+      "min": 0,
+      "max": 100,
+      "required": false
+    },
+    "last_activity_at": {
+      "type": "datetime",
+      "required": false
+    },
+    "forecast_notes": {
+      "type": "text",
+      "required": false
+    },
+    "project": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project.project",
+      "inversedBy": "pipeline_deals"
+    },
+    "deal_milestones": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::deal-milestone.deal-milestone",
+      "mappedBy": "deal"
+    },
+    "forecast_snapshots": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::forecast-snapshot.forecast-snapshot",
+      "mappedBy": "deal"
+    },
+    "risk_flags": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::risk-flag.risk-flag",
+      "mappedBy": "deal"
+    },
+    "billings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::billing.billing",
+      "mappedBy": "deal"
+    }
+  }
+}
+

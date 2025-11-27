@@ -3,4 +3,6 @@ uvicorn==0.38.0
 httpx==0.28.1
 python-dotenv==1.2.1
 pydantic==2.12.4
+annotated-types==0.7.0
+typing-extensions==4.15.0
 

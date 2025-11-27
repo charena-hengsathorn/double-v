@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "clients",
+  "info": {
+    "singularName": "client",
+    "pluralName": "clients",
+    "displayName": "Client",
+    "description": "Client/Account information"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "client_id": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "segment": {
+      "type": "enumeration",
+      "enum": ["enterprise", "mid-market", "smb"],
+      "required": false
+    },
+    "region": {
+      "type": "string",
+      "required": false
+    },
+    "account_owner_id": {
+      "type": "string",
+      "required": false
+    },
+    "lifetime_value": {
+      "type": "decimal",
+      "required": false
+    },
+    "projects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::project.project",
+      "mappedBy": "client"
+    }
+  }
+}
+

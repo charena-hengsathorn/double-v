@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "deal_milestones",
+  "info": {
+    "singularName": "deal-milestone",
+    "pluralName": "deal-milestones",
+    "displayName": "Deal Milestone",
+    "description": "Milestones within a deal for billing and recognition"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "milestone_id": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "sequence_order": {
+      "type": "integer",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "scheduled_date": {
+      "type": "date",
+      "required": false
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "recognition_month": {
+      "type": "date",
+      "required": false
+    },
+    "billing_type": {
+      "type": "enumeration",
+      "enum": ["upfront", "milestone", "recurring", "usage-based"],
+      "required": false
+    },
+    "collection_terms": {
+      "type": "string",
+      "required": false
+    },
+    "deal": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pipeline-deal.pipeline-deal",
+      "inversedBy": "deal_milestones"
+    },
+    "billings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::billing.billing",
+      "mappedBy": "milestone"
+    }
+  }
+}
+

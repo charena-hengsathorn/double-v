@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "risk_flags",
+  "info": {
+    "singularName": "risk-flag",
+    "pluralName": "risk-flags",
+    "displayName": "Risk Flag",
+    "description": "Risk flags associated with deals"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "flag_id": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["timing", "budget", "stakeholder", "technical", "competitive", "other"],
+      "required": true
+    },
+    "severity": {
+      "type": "enumeration",
+      "enum": ["low", "medium", "high", "critical"],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["open", "investigating", "resolved", "dismissed"],
+      "required": true,
+      "default": "open"
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "owner_id": {
+      "type": "string",
+      "required": false
+    },
+    "resolved_at": {
+      "type": "datetime",
+      "required": false
+    },
+    "resolution_notes": {
+      "type": "text",
+      "required": false
+    },
+    "deal": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pipeline-deal.pipeline-deal",
+      "inversedBy": "risk_flags"
+    }
+  }
+}
+

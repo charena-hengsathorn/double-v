@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "billings",
+  "info": {
+    "singularName": "billing",
+    "pluralName": "billings",
+    "displayName": "Billing",
+    "description": "Billing records and invoice information"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "billing_id": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "invoice_number": {
+      "type": "string",
+      "required": false
+    },
+    "invoice_date": {
+      "type": "date",
+      "required": true
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "required": false
+    },
+    "collected_date": {
+      "type": "date",
+      "required": false
+    },
+    "recognition_month": {
+      "type": "date",
+      "required": false
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["draft", "sent", "paid", "overdue", "cancelled"],
+      "required": false
+    },
+    "payment_reference": {
+      "type": "string",
+      "required": false
+    },
+    "deal": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pipeline-deal.pipeline-deal",
+      "inversedBy": "billings"
+    },
+    "milestone": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::deal-milestone.deal-milestone",
+      "inversedBy": "billings"
+    }
+  }
+}
+

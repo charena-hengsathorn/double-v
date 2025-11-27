@@ -430,6 +430,384 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiBillingBilling extends Struct.CollectionTypeSchema {
+  collectionName: 'billings';
+  info: {
+    description: 'Billing records and invoice information';
+    displayName: 'Billing';
+    pluralName: 'billings';
+    singularName: 'billing';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    billing_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    collected_date: Schema.Attribute.Date;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
+    deal: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::pipeline-deal.pipeline-deal'
+    >;
+    invoice_date: Schema.Attribute.Date & Schema.Attribute.Required;
+    invoice_number: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::billing.billing'
+    > &
+      Schema.Attribute.Private;
+    milestone: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::deal-milestone.deal-milestone'
+    >;
+    payment_reference: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    recognition_month: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<
+      ['draft', 'sent', 'paid', 'overdue', 'cancelled']
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiClientClient extends Struct.CollectionTypeSchema {
+  collectionName: 'clients';
+  info: {
+    description: 'Client/Account information';
+    displayName: 'Client';
+    pluralName: 'clients';
+    singularName: 'client';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    account_owner_id: Schema.Attribute.String;
+    client_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    lifetime_value: Schema.Attribute.Decimal;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::client.client'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    projects: Schema.Attribute.Relation<'oneToMany', 'api::project.project'>;
+    publishedAt: Schema.Attribute.DateTime;
+    region: Schema.Attribute.String;
+    segment: Schema.Attribute.Enumeration<['enterprise', 'mid-market', 'smb']>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiDealMilestoneDealMilestone
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'deal_milestones';
+  info: {
+    description: 'Milestones within a deal for billing and recognition';
+    displayName: 'Deal Milestone';
+    pluralName: 'deal-milestones';
+    singularName: 'deal-milestone';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    billing_type: Schema.Attribute.Enumeration<
+      ['upfront', 'milestone', 'recurring', 'usage-based']
+    >;
+    billings: Schema.Attribute.Relation<'oneToMany', 'api::billing.billing'>;
+    collection_terms: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    deal: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::pipeline-deal.pipeline-deal'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::deal-milestone.deal-milestone'
+    > &
+      Schema.Attribute.Private;
+    milestone_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    recognition_month: Schema.Attribute.Date;
+    scheduled_date: Schema.Attribute.Date;
+    sequence_order: Schema.Attribute.Integer & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiForecastSnapshotForecastSnapshot
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'forecast_snapshots';
+  info: {
+    description: 'Forecast snapshots generated by predictive service';
+    displayName: 'Forecast Snapshot';
+    pluralName: 'forecast-snapshots';
+    singularName: 'forecast-snapshot';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    author_id: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    deal: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::pipeline-deal.pipeline-deal'
+    >;
+    expected_amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    expected_margin: Schema.Attribute.Decimal;
+    expected_month: Schema.Attribute.Date & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::forecast-snapshot.forecast-snapshot'
+    > &
+      Schema.Attribute.Private;
+    model_version: Schema.Attribute.String;
+    probability: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+          min: 0;
+        },
+        number
+      >;
+    publishedAt: Schema.Attribute.DateTime;
+    scenario: Schema.Attribute.Enumeration<
+      ['base', 'optimistic', 'pessimistic', 'custom']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'base'>;
+    snapshot_date: Schema.Attribute.Date & Schema.Attribute.Required;
+    snapshot_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPipelineDealPipelineDeal
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'pipeline_deals';
+  info: {
+    description: 'Sales pipeline deals with forecasting data';
+    displayName: 'Pipeline Deal';
+    pluralName: 'pipeline-deals';
+    singularName: 'pipeline-deal';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    billings: Schema.Attribute.Relation<'oneToMany', 'api::billing.billing'>;
+    confidence_override: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+          min: 0;
+        },
+        number
+      >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
+    deal_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    deal_milestones: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::deal-milestone.deal-milestone'
+    >;
+    deal_value: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    delivery_owner_id: Schema.Attribute.String;
+    expected_close_date: Schema.Attribute.Date;
+    forecast_notes: Schema.Attribute.Text;
+    forecast_snapshots: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::forecast-snapshot.forecast-snapshot'
+    >;
+    last_activity_at: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::pipeline-deal.pipeline-deal'
+    > &
+      Schema.Attribute.Private;
+    probability: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+          min: 0;
+        },
+        number
+      >;
+    project: Schema.Attribute.Relation<'manyToOne', 'api::project.project'>;
+    publishedAt: Schema.Attribute.DateTime;
+    recognition_end_month: Schema.Attribute.Date;
+    recognition_start_month: Schema.Attribute.Date;
+    risk_flags: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::risk-flag.risk-flag'
+    >;
+    sales_owner_id: Schema.Attribute.String;
+    source_channel: Schema.Attribute.String;
+    stage: Schema.Attribute.Enumeration<
+      [
+        'prospecting',
+        'qualification',
+        'proposal',
+        'negotiation',
+        'closed-won',
+        'closed-lost',
+      ]
+    > &
+      Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<['active', 'won', 'lost', 'stalled']> &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiProjectProject extends Struct.CollectionTypeSchema {
+  collectionName: 'projects';
+  info: {
+    description: 'Project information linked to clients';
+    displayName: 'Project';
+    pluralName: 'projects';
+    singularName: 'project';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
+    complexity_score: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 10;
+          min: 1;
+        },
+        number
+      >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    end_date: Schema.Attribute.Date;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::project.project'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    notes: Schema.Attribute.Text;
+    pipeline_deals: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::pipeline-deal.pipeline-deal'
+    >;
+    project_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    publishedAt: Schema.Attribute.DateTime;
+    start_date: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<
+      ['active', 'completed', 'on-hold', 'cancelled']
+    >;
+    type: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRiskFlagRiskFlag extends Struct.CollectionTypeSchema {
+  collectionName: 'risk_flags';
+  info: {
+    description: 'Risk flags associated with deals';
+    displayName: 'Risk Flag';
+    pluralName: 'risk-flags';
+    singularName: 'risk-flag';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['timing', 'budget', 'stakeholder', 'technical', 'competitive', 'other']
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    deal: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::pipeline-deal.pipeline-deal'
+    >;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    flag_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::risk-flag.risk-flag'
+    > &
+      Schema.Attribute.Private;
+    owner_id: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    resolution_notes: Schema.Attribute.Text;
+    resolved_at: Schema.Attribute.DateTime;
+    severity: Schema.Attribute.Enumeration<
+      ['low', 'medium', 'high', 'critical']
+    > &
+      Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      ['open', 'investigating', 'resolved', 'dismissed']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'open'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -940,6 +1318,13 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::billing.billing': ApiBillingBilling;
+      'api::client.client': ApiClientClient;
+      'api::deal-milestone.deal-milestone': ApiDealMilestoneDealMilestone;
+      'api::forecast-snapshot.forecast-snapshot': ApiForecastSnapshotForecastSnapshot;
+      'api::pipeline-deal.pipeline-deal': ApiPipelineDealPipelineDeal;
+      'api::project.project': ApiProjectProject;
+      'api::risk-flag.risk-flag': ApiRiskFlagRiskFlag;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

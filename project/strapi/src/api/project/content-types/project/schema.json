@@ -1,0 +1,65 @@
+{
+  "kind": "collectionType",
+  "collectionName": "projects",
+  "info": {
+    "singularName": "project",
+    "pluralName": "projects",
+    "displayName": "Project",
+    "description": "Project information linked to clients"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "project_id": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "string",
+      "required": false
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "completed", "on-hold", "cancelled"],
+      "required": false
+    },
+    "complexity_score": {
+      "type": "integer",
+      "min": 1,
+      "max": 10,
+      "required": false
+    },
+    "start_date": {
+      "type": "date",
+      "required": false
+    },
+    "end_date": {
+      "type": "date",
+      "required": false
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "client": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::client.client",
+      "inversedBy": "projects"
+    },
+    "pipeline_deals": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pipeline-deal.pipeline-deal",
+      "mappedBy": "project"
+    }
+  }
+}
+
