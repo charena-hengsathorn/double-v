@@ -6,11 +6,32 @@ import axios from 'axios';
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337/api';
 const PREDICTIVE_SERVICE_URL = process.env.NEXT_PUBLIC_PREDICTIVE_SERVICE_URL || 'http://localhost:8000/api/v1';
 
+// Get auth token from localStorage
+const getAuthToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('jwt');
+  }
+  return null;
+};
+
+// Create axios instance with auth interceptor
+const strapiClient = axios.create({
+  baseURL: STRAPI_URL,
+});
+
+strapiClient.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Strapi API client
 export const strapiApi = {
   async getClients() {
     try {
-      const response = await axios.get(`${STRAPI_URL}/clients`);
+      const response = await strapiClient.get('/clients');
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -29,7 +50,7 @@ export const strapiApi = {
         });
       }
       params.append('populate', 'project,deal_milestones,risk_flags');
-      const response = await axios.get(`${STRAPI_URL}/pipeline-deals?${params.toString()}`);
+      const response = await strapiClient.get(`/pipeline-deals?${params.toString()}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -48,7 +69,7 @@ export const strapiApi = {
         });
       }
       params.append('populate', 'deal');
-      const response = await axios.get(`${STRAPI_URL}/forecast-snapshots?${params.toString()}`);
+      const response = await strapiClient.get(`/forecast-snapshots?${params.toString()}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -67,7 +88,7 @@ export const strapiApi = {
         });
       }
       params.append('populate', 'deal,milestone');
-      const response = await axios.get(`${STRAPI_URL}/billings?${params.toString()}`);
+      const response = await strapiClient.get(`/billings?${params.toString()}`);
       return response.data;
     } catch (error: any) {
       // If 404 (content type not found or no permissions), return empty data
@@ -87,7 +108,7 @@ export const strapiApi = {
         });
       }
       params.append('populate', 'deal');
-      const response = await axios.get(`${STRAPI_URL}/risk-flags?${params.toString()}`);
+      const response = await strapiClient.get(`/risk-flags?${params.toString()}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {

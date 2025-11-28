@@ -31,6 +31,7 @@ export default {
           { uid: 'api::forecast-snapshot.forecast-snapshot', name: 'forecast-snapshot' },
           { uid: 'api::billing.billing', name: 'billing' },
           { uid: 'api::risk-flag.risk-flag', name: 'risk-flag' },
+          { uid: 'api::user-profile.user-profile', name: 'user-profile' },
         ];
 
         for (const contentType of contentTypes) {

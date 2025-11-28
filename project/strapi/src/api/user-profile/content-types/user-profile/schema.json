@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_profiles",
+  "info": {
+    "singularName": "user-profile",
+    "pluralName": "user-profiles",
+    "displayName": "User Profile",
+    "description": "Extended user profile information"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user_id": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "first_name": {
+      "type": "string",
+      "required": false
+    },
+    "last_name": {
+      "type": "string",
+      "required": false
+    },
+    "role": {
+      "type": "enumeration",
+      "enum": ["executive", "finance", "sales", "analyst", "admin"],
+      "required": false
+    },
+    "department": {
+      "type": "string",
+      "required": false
+    },
+    "phone": {
+      "type": "string",
+      "required": false
+    },
+    "avatar_url": {
+      "type": "string",
+      "required": false
+    },
+    "preferences": {
+      "type": "json",
+      "required": false
+    },
+    "last_login_at": {
+      "type": "datetime",
+      "required": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "required": false
+    }
+  }
+}
+
