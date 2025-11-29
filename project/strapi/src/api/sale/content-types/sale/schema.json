@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sales",
+  "info": {
+    "singularName": "sale",
+    "pluralName": "sales",
+    "displayName": "Sales",
+    "description": "Sales entries for cashflow tracking"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "client": {
+      "type": "string",
+      "required": true
+    },
+    "sale_amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "construction_cost": {
+      "type": "decimal",
+      "required": true
+    },
+    "project_profit": {
+      "type": "decimal",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "Confirmed",
+        "Pending",
+        "Closed"
+      ],
+      "default": "Pending",
+      "required": true
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}
+

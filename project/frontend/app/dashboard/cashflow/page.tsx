@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Alert, Button } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Button, Card, CardContent } from '@mui/material';
 import { strapiApi, predictiveApi } from '@/lib/api';
-import StackedAreaChart from '@/components/StackedAreaChart';
-import WaterfallChart from '@/components/WaterfallChart';
 import KPICard from '@/components/KPICard';
+import StackedAreaChart from '@/components/StackedAreaChart';
 import { motion } from 'framer-motion';
 
-export default function Financials() {
+export default function DashboardCashflow() {
   const [forecast, setForecast] = useState<any>(null);
   const [billings, setBillings] = useState<any>(null);
-  const [waterfall, setWaterfall] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,15 +22,13 @@ export default function Financials() {
       setLoading(true);
       setError(null);
 
-      const [forecastData, billingsData, waterfallData] = await Promise.all([
+      const [forecastData, billingsData] = await Promise.all([
         predictiveApi.getBaseForecast().catch(() => null),
         strapiApi.getBillings().catch(() => ({ data: [] })),
-        predictiveApi.getForecastWaterfall().catch(() => null),
       ]);
 
       setForecast(forecastData);
       setBillings(billingsData || { data: [] });
-      setWaterfall(waterfallData);
     } catch (err: any) {
       if (err.response?.status !== 404) {
         setError(err.message || 'Failed to load data');
@@ -52,37 +48,40 @@ export default function Financials() {
     }).format(value);
   };
 
-  // Calculate financial metrics from billings
-  const calculateMetrics = () => {
-    if (!billings?.data) return { billedYTD: 0, collectedYTD: 0, outstandingAR: 0 };
+  // Calculate cashflow metrics
+  const calculateCashflowMetrics = () => {
+    if (!billings?.data) return { 
+      totalInflow: 0, 
+      totalOutflow: 0, 
+      netCashflow: 0,
+      projectedInflow: 0 
+    };
 
     const today = new Date();
     const currentYear = today.getFullYear();
 
-    let billedYTD = 0;
-    let collectedYTD = 0;
-    let outstandingAR = 0;
+    let totalInflow = 0;
+    let totalOutflow = 0;
 
     billings.data.forEach((billing: any) => {
       const attrs = billing.attributes || {};
-      const invoiceDate = attrs.invoice_date ? new Date(attrs.invoice_date) : null;
       const collectedDate = attrs.collected_date ? new Date(attrs.collected_date) : null;
       const amount = parseFloat(attrs.amount || 0);
 
-      if (invoiceDate && invoiceDate.getFullYear() === currentYear) {
-        billedYTD += amount;
-      }
-
       if (collectedDate && collectedDate.getFullYear() === currentYear) {
-        collectedYTD += amount;
-      }
-
-      if (attrs.status === 'sent' || attrs.status === 'overdue') {
-        outstandingAR += amount;
+        totalInflow += amount;
       }
     });
 
-    return { billedYTD, collectedYTD, outstandingAR };
+    const summary = forecast?.forecast?.summary || {};
+    const projectedInflow = summary.total_forecast || 0;
+
+    return { 
+      totalInflow, 
+      totalOutflow, 
+      netCashflow: totalInflow - totalOutflow,
+      projectedInflow 
+    };
   };
 
   if (loading) {
@@ -90,7 +89,7 @@ export default function Financials() {
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
         <CircularProgress size={48} />
         <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-          Loading financial data...
+          Loading cashflow data...
         </Typography>
       </Box>
     );
@@ -112,10 +111,8 @@ export default function Financials() {
     );
   }
 
-  const metrics = calculateMetrics();
-  const summary = forecast?.forecast?.summary || {};
+  const metrics = calculateCashflowMetrics();
   const monthlyTotals = forecast?.forecast?.monthly_totals || [];
-  const waterfallData = waterfall?.variance?.breakdown || [];
 
   return (
     <Box>
@@ -125,54 +122,61 @@ export default function Financials() {
         transition={{ duration: 0.4 }}
       >
         <Typography variant="h4" sx={{ fontWeight: 300, mb: 1, letterSpacing: '-0.02em' }}>
-          Financials
+          Cashflow
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Evaluate cash flow and overall revenue outlook
+          Monitor cash inflows, outflows, and liquidity
         </Typography>
       </motion.div>
 
       {/* KPI Cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
         <KPICard
-          title="Billed YTD"
-          value={formatCurrency(metrics.billedYTD)}
-          subtitle="Year-to-date invoiced"
+          title="Total Inflow"
+          value={formatCurrency(metrics.totalInflow)}
+          subtitle="Year-to-date collected"
           delay={0.1}
         />
         <KPICard
-          title="Collected YTD"
-          value={formatCurrency(metrics.collectedYTD)}
-          subtitle="Year-to-date collected"
+          title="Total Outflow"
+          value={formatCurrency(metrics.totalOutflow)}
+          subtitle="Year-to-date expenses"
           delay={0.2}
         />
         <KPICard
-          title="Outstanding AR"
-          value={formatCurrency(metrics.outstandingAR)}
-          subtitle="Accounts receivable"
+          title="Net Cashflow"
+          value={formatCurrency(metrics.netCashflow)}
+          subtitle="Current balance"
+          trend={metrics.netCashflow >= 0 ? 'up' : 'down'}
           delay={0.3}
         />
         <KPICard
-          title="Total Forecast"
-          value={formatCurrency(summary.total_forecast || 0)}
-          subtitle="12-month outlook"
+          title="Projected Inflow"
+          value={formatCurrency(metrics.projectedInflow)}
+          subtitle="12-month forecast"
           delay={0.4}
         />
       </Box>
 
-      {/* Charts */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, gap: 3 }}>
-        <StackedAreaChart
-          data={monthlyTotals}
-          title="Revenue Forecast"
-        />
-        <WaterfallChart
-          data={waterfallData.length > 0 ? waterfallData : [
-            { name: 'Total', prior: 0, current: 0, change: 0 }
-          ]}
-          title="Forecast Waterfall"
-        />
-      </Box>
+      {/* Cashflow Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+      >
+        <Card>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 400 }}>
+              Cashflow Projection
+            </Typography>
+            <StackedAreaChart
+              data={monthlyTotals}
+              title=""
+            />
+          </CardContent>
+        </Card>
+      </motion.div>
     </Box>
   );
 }
+

@@ -38,22 +38,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('jwt');
+      const storedUser = localStorage.getItem('user');
+      
+      // Restore user from localStorage immediately for faster UI
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+        } catch (e) {
+          // Invalid stored user data
+          localStorage.removeItem('user');
+        }
+      }
+
       if (!token) {
         setLoading(false);
         return;
       }
 
-      // Verify token and get user
-      const response = await axios.get(`${STRAPI_URL}/users/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Verify token and get fresh user data
+      try {
+        const response = await axios.get(`${STRAPI_URL}/users/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      setUser(response.data);
+        // Update with fresh user data
+        setUser(response.data);
+        localStorage.setItem('user', JSON.stringify(response.data));
+      } catch (error) {
+        // Token invalid or expired - try to use stored user as fallback
+        // If stored user exists, keep it; otherwise clear everything
+        if (!storedUser) {
+          localStorage.removeItem('jwt');
+          localStorage.removeItem('user');
+          setUser(null);
+        }
+      }
     } catch (error) {
-      // Token invalid or expired
+      // Clear everything on error
       localStorage.removeItem('jwt');
+      localStorage.removeItem('user');
       setUser(null);
     } finally {
       setLoading(false);
@@ -69,7 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const { jwt, user: userData } = response.data;
+      
+      // Store both token and user data in localStorage
       localStorage.setItem('jwt', jwt);
+      localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
 
       // Redirect to dashboard
@@ -92,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: { name: 'authenticated' },
         };
         localStorage.setItem('jwt', 'demo-token');
+        localStorage.setItem('user', JSON.stringify(mockUser));
         setUser(mockUser);
         router.push('/dashboard');
         return;
@@ -103,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('jwt');
+    localStorage.removeItem('user');
     setUser(null);
     router.push('/login');
   };

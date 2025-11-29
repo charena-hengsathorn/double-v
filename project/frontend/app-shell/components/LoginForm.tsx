@@ -2,6 +2,17 @@
 
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+import { motion } from 'framer-motion';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -25,78 +36,122 @@ export default function LoginForm() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-sm">
-        {/* Header - outside card for better mobile spacing */}
-        <div className="mb-6 text-center">
-          <h1 className="text-3xl font-light text-gray-900 mb-2">Double V</h1>
-          <p className="text-gray-600 text-sm">Executive Dashboard Suite</p>
-        </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+        p: 2,
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card
+          sx={{
+            maxWidth: 400,
+            width: '100%',
+            boxShadow: 'none',
+            border: '1px solid rgba(44, 44, 44, 0.06)',
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{
+                  fontWeight: 300,
+                  color: 'text.primary',
+                  letterSpacing: '0.05em',
+                  mb: 1,
+                }}
+              >
+                Double V
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ letterSpacing: '0.02em' }}>
+                Executive Dashboard
+              </Typography>
+            </Box>
 
-        {/* Login Card - optimized for iPhone screens */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
-          <h2 className="text-xl font-light text-gray-900 mb-6">Sign in</h2>
+            <form onSubmit={handleSubmit}>
+              {error && (
+                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                  {error}
+                </Alert>
+              )}
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Email address
-                </label>
-                <input
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
                   id="email-address"
                   name="email"
                   type="email"
+                  label="Email"
                   autoComplete="email"
                   required
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-gray-900 text-base focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="you@example.com"
+                  fullWidth
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  variant="outlined"
+                  disabled={loading}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
                 />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Password
-                </label>
-                <input
+
+                <TextField
                   id="password"
                   name="password"
                   type="password"
+                  label="Password"
                   autoComplete="current-password"
                   required
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-gray-900 text-base focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="••••••••"
+                  fullWidth
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  variant="outlined"
+                  disabled={loading}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
                 />
-              </div>
-            </div>
 
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
-
-            <div className="text-xs text-center text-gray-500 pt-4 border-t border-gray-200">
-              <p>Sign in with your Strapi user credentials</p>
-              <p className="mt-1 text-gray-400">Create users in Strapi Admin → Content Manager → User</p>
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  size="large"
+                  disabled={loading}
+                  sx={{
+                    py: 1.5,
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 400,
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  {loading ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CircularProgress size={20} color="inherit" />
+                      <span>Signing in...</span>
+                    </Box>
+                  ) : (
+                    'Sign in'
+                  )}
+                </Button>
+              </Box>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </Box>
   );
 }
-

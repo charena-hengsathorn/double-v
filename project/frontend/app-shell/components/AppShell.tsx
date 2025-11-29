@@ -1,7 +1,9 @@
 'use client';
 
 import { ReactNode } from 'react';
-import Navigation from './Navigation';
+import { Box } from '@mui/material';
+import Sidebar from './Sidebar';
+import { motion } from 'framer-motion';
 
 interface AppShellProps {
   children: ReactNode;
@@ -9,10 +11,28 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      <main>{children}</main>
-    </div>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Left Sidebar */}
+      <Sidebar />
+      
+      {/* Main Content Area */}
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Page Content */}
+        <Box
+          component={motion.main}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          sx={{
+            flex: 1,
+            overflow: 'auto',
+            p: { xs: 2, sm: 3, md: 4 },
+            bgcolor: 'background.default',
+          }}
+        >
+          {children}
+        </Box>
+      </Box>
+    </Box>
   );
 }
-

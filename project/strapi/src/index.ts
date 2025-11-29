@@ -32,6 +32,7 @@ export default {
           { uid: 'api::billing.billing', name: 'billing' },
           { uid: 'api::risk-flag.risk-flag', name: 'risk-flag' },
           { uid: 'api::user-profile.user-profile', name: 'user-profile' },
+          { uid: 'api::sale.sale', name: 'sales' },
         ];
 
         for (const contentType of contentTypes) {

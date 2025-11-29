@@ -117,6 +117,39 @@ export const strapiApi = {
       throw error;
     }
   },
+
+  async getSales(filters?: Record<string, any>) {
+    try {
+      const params = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          params.append(`filters[${key}]`, value);
+        });
+      }
+      const response = await strapiClient.get(`/sales?${params.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return { data: [] };
+      }
+      throw error;
+    }
+  },
+
+  async createSales(data: any) {
+    const response = await strapiClient.post('/sales', { data });
+    return response.data;
+  },
+
+  async updateSales(id: string | number, data: any) {
+    const response = await strapiClient.put(`/sales/${id}`, { data });
+    return response.data;
+  },
+
+  async deleteSales(id: string | number) {
+    const response = await strapiClient.delete(`/sales/${id}`);
+    return response.data;
+  },
 };
 
 // Predictive Service API client

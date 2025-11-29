@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Box, Typography, Card, CardContent, Button, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from '@mui/material';
+import { Download as DownloadIcon } from '@mui/icons-material';
 import { predictiveApi } from '@/lib/api';
 import KPICard from '@/components/KPICard';
+import { motion } from 'framer-motion';
 
 export default function ExecutiveSummary() {
   const [forecast, setForecast] = useState<any>(null);
@@ -28,7 +30,6 @@ export default function ExecutiveSummary() {
       setForecast(forecastData);
       setRiskHeatmap(heatmapData);
     } catch (err: any) {
-      // Only set error for non-404 errors
       if (err.response?.status !== 404) {
         setError(err.message || 'Failed to load data');
         console.error('Error loading data:', err);
@@ -73,32 +74,28 @@ export default function ExecutiveSummary() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600">Loading executive summary...</p>
-          </div>
-        </div>
-      </main>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+        <CircularProgress size={48} />
+        <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+          Loading executive summary...
+        </Typography>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">Error: {error}</p>
-            <button
-              onClick={loadData}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </main>
+      <Alert 
+        severity="error" 
+        action={
+          <Button color="inherit" size="small" onClick={loadData}>
+            Retry
+          </Button>
+        }
+        sx={{ borderRadius: 2 }}
+      >
+        {error}
+      </Alert>
     );
   }
 
@@ -107,132 +104,213 @@ export default function ExecutiveSummary() {
   const topRisks = riskHeatmap?.top_risks || [];
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Link href="/dashboard" className="text-sm text-blue-600 hover:text-blue-700 mb-4 inline-block">
-            ← Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-light text-gray-900 mb-2">Executive Summary</h1>
-          <p className="text-gray-600">Rapid insight via concise summary</p>
-        </div>
+    <Box>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 300, mb: 1, letterSpacing: '-0.02em' }}>
+          Executive Summary
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          Rapid insight via concise summary
+        </Typography>
+      </motion.div>
 
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8 mb-6">
-          <h2 className="text-xl font-light text-gray-900 mb-4">Base Forecast</h2>
-          <p className="text-4xl font-light text-gray-900 mb-2">
-            {formatCurrency(summary.total_forecast || 0)}
-          </p>
-          <p className="text-sm text-gray-500">
-            with {formatCurrency(riskSummary.total_at_risk || 0)} at risk
-          </p>
-        </div>
+      {/* Base Forecast Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <Card sx={{ mb: 3 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.75rem' }}>
+              Base Forecast
+            </Typography>
+            <Typography variant="h3" sx={{ color: 'text.primary', fontWeight: 300, mb: 1, letterSpacing: '-0.02em' }}>
+              {formatCurrency(summary.total_forecast || 0)}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              with {formatCurrency(riskSummary.total_at_risk || 0)} at risk
+            </Typography>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Outlook</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Confirmed Revenue</span>
-                <span className="text-sm font-medium">{formatCurrency(summary.total_confirmed || 0)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Tentative Pipeline</span>
-                <span className="text-sm font-medium">{formatCurrency(summary.total_tentative || 0)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Conversion Rate</span>
-                <span className="text-sm font-medium">
-                  {((summary.conversion_rate || 0) * 100).toFixed(1)}%
-                </span>
-              </div>
-            </div>
-          </div>
+      {/* KPI Cards */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3, mb: 4 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 400 }}>
+                Outlook
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Confirmed Revenue</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {formatCurrency(summary.total_confirmed || 0)}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Tentative Pipeline</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {formatCurrency(summary.total_tentative || 0)}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Conversion Rate</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {((summary.conversion_rate || 0) * 100).toFixed(1)}%
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 400 }}>
+                Risks
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Total At Risk</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: 'error.main' }}>
+                    {formatCurrency(riskSummary.total_at_risk || 0)}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">High Risk Deals</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {riskSummary.high_risk_count || 0}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Medium Risk Deals</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {riskSummary.medium_risk_count || 0}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+        >
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 400 }}>
+                Actions
+              </Typography>
+              <Box component="ul" sx={{ m: 0, pl: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  Review {riskSummary.high_risk_count || 0} high-risk deals
+                </Typography>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  Focus on deals in negotiation stage
+                </Typography>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  Address low-activity deals
+                </Typography>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  Monitor conversion rate trends
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </Box>
 
-          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Risks</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Total At Risk</span>
-                <span className="text-sm font-medium text-red-600">
-                  {formatCurrency(riskSummary.total_at_risk || 0)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">High Risk Deals</span>
-                <span className="text-sm font-medium">{riskSummary.high_risk_count || 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Medium Risk Deals</span>
-                <span className="text-sm font-medium">{riskSummary.medium_risk_count || 0}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Actions</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Review {riskSummary.high_risk_count || 0} high-risk deals</li>
-              <li>• Focus on deals in negotiation stage</li>
-              <li>• Address low-activity deals</li>
-              <li>• Monitor conversion rate trends</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Top At-Risk Deals</h2>
-            <button
-              onClick={exportToCSV}
-              className="text-sm text-gray-600 hover:text-gray-900 px-4 py-2 border border-gray-200 rounded hover:bg-gray-50"
-            >
-              Export CSV
-            </button>
-          </div>
-          {topRisks.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2">Deal ID</th>
-                    <th className="text-left p-2">Risk Score</th>
-                    <th className="text-left p-2">Risk Factors</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topRisks.slice(0, 10).map((risk: any, idx: number) => (
-                    <tr key={idx} className="border-b hover:bg-gray-50">
-                      <td className="p-2 font-medium">{risk.deal_id}</td>
-                      <td className="p-2">
-                        <span className={`px-2 py-1 rounded text-sm ${
-                          risk.risk_score > 0.7 ? 'bg-red-100 text-red-800' :
-                          risk.risk_score > 0.4 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {(risk.risk_score * 100).toFixed(0)}%
-                        </span>
-                      </td>
-                      <td className="p-2">
-                        <div className="flex flex-wrap gap-1">
-                          {risk.risk_factors?.map((factor: string, fIdx: number) => (
-                            <span key={fIdx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                              {factor}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No at-risk deals identified
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
+      {/* Top At-Risk Deals Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
+      >
+        <Card sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 400 }}>
+                Top At-Risk Deals
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={<DownloadIcon />}
+                onClick={exportToCSV}
+                sx={{ textTransform: 'none', borderRadius: 2 }}
+              >
+                Export CSV
+              </Button>
+            </Box>
+            {topRisks.length > 0 ? (
+              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: 'grey.50' }}>
+                      <TableCell sx={{ fontWeight: 500 }}>Deal ID</TableCell>
+                      <TableCell sx={{ fontWeight: 500 }}>Risk Score</TableCell>
+                      <TableCell sx={{ fontWeight: 500 }}>Risk Factors</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {topRisks.slice(0, 10).map((risk: any, idx: number) => (
+                      <TableRow key={idx} hover>
+                        <TableCell sx={{ fontWeight: 500 }}>{risk.deal_id}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={`${(risk.risk_score * 100).toFixed(0)}%`}
+                            size="small"
+                            color={
+                              risk.risk_score > 0.7 ? 'error' :
+                              risk.risk_score > 0.4 ? 'warning' :
+                              'success'
+                            }
+                            sx={{ fontWeight: 500 }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {risk.risk_factors?.map((factor: string, fIdx: number) => (
+                              <Chip
+                                key={fIdx}
+                                label={factor}
+                                size="small"
+                                variant="outlined"
+                                sx={{ fontSize: '0.75rem' }}
+                              />
+                            ))}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Typography variant="body2" color="text.secondary">
+                  No at-risk deals identified
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </Box>
   );
 }

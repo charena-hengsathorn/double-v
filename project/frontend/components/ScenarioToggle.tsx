@@ -1,5 +1,8 @@
 'use client';
 
+import { ToggleButton, ToggleButtonGroup, Box } from '@mui/material';
+import { motion } from 'framer-motion';
+
 interface ScenarioToggleProps {
   selectedScenario: string;
   onScenarioChange: (scenario: string) => void;
@@ -15,22 +18,56 @@ export default function ScenarioToggle({
     { id: 'worst', label: 'Worst Case' },
   ]
 }: ScenarioToggleProps) {
+  const handleChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newScenario: string | null,
+  ) => {
+    if (newScenario !== null) {
+      onScenarioChange(newScenario);
+    }
+  };
+
   return (
-    <div className="flex gap-2 p-2 bg-gray-100 rounded-lg">
-      {scenarios.map((scenario) => (
-        <button
-          key={scenario.id}
-          onClick={() => onScenarioChange(scenario.id)}
-          className={`px-4 py-2 rounded-md font-medium transition-colors ${
-            selectedScenario === scenario.id
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-200'
-          }`}
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Box sx={{ display: 'flex', gap: 1, bgcolor: 'grey.100', p: 0.5, borderRadius: 2 }}>
+        <ToggleButtonGroup
+          value={selectedScenario}
+          exclusive
+          onChange={handleChange}
+          aria-label="scenario selection"
+          sx={{
+            '& .MuiToggleButton-root': {
+              border: 'none',
+              borderRadius: 1.5,
+              px: 3,
+              py: 1,
+              textTransform: 'none',
+              fontWeight: 500,
+              color: 'text.secondary',
+              '&.Mui-selected': {
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                },
+              },
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            },
+          }}
         >
-          {scenario.label}
-        </button>
-      ))}
-    </div>
+          {scenarios.map((scenario) => (
+            <ToggleButton key={scenario.id} value={scenario.id}>
+              {scenario.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </Box>
+    </motion.div>
   );
 }
-
