@@ -156,7 +156,17 @@ export const strapiApi = {
       },
       body: JSON.stringify({ data }),
     });
-    const result = await response.json();
+    
+    // Handle non-JSON error responses
+    let result;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    
     if (!response.ok) {
       throw new Error(result.error || 'Failed to create sale');
     }

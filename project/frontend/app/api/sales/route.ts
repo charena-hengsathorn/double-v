@@ -11,7 +11,20 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const data = await response.json();
+    // Handle non-JSON responses
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      return NextResponse.json(
+        { error: text || `HTTP ${response.status}: ${response.statusText}` },
+        { status: response.status }
+      );
+    }
+
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
     return NextResponse.json(
@@ -33,7 +46,20 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    // Handle non-JSON responses (like "Method Not Allowed")
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      return NextResponse.json(
+        { error: text || `HTTP ${response.status}: ${response.statusText}` },
+        { status: response.status }
+      );
+    }
+
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
     return NextResponse.json(
