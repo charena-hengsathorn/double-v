@@ -60,3 +60,4 @@ Once Strapi is restarted, the following endpoints will be available:
 
 All endpoints support standard CRUD operations (GET, POST, PATCH, DELETE) with proper authentication.
 
+

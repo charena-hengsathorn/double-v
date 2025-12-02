@@ -122,3 +122,4 @@ class AlertManager:
 # Global alert manager instance
 alert_manager = AlertManager()
 
+

@@ -73,3 +73,4 @@ echo -e "${GREEN}✅ Heroku environment variables updated!${NC}"
 echo -e "${YELLOW}⚠️  Vercel variables need to be added manually (see above)${NC}"
 echo ""
 
+

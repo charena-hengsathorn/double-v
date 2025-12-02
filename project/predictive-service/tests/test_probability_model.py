@@ -99,3 +99,4 @@ class TestProbabilityModel:
         assert adjusted >= Decimal("0.0")
         assert adjusted <= Decimal("1.0")
 
+

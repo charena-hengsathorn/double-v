@@ -78,3 +78,4 @@ class StrapiSyncResponse(BaseModel):
     entities_synced: Dict[str, int]
     sync_duration_ms: int
 
+

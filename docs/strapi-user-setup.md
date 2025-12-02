@@ -124,3 +124,4 @@ Configure what authenticated users can do:
 **"User is blocked"**
 - Set `blocked: false` in user settings
 
+

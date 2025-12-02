@@ -120,16 +120,27 @@ export const strapiApi = {
 
   async getSales(filters?: Record<string, any>) {
     try {
+      // Use Next.js API route to proxy to Strapi
       const params = new URLSearchParams();
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           params.append(`filters[${key}]`, value);
         });
       }
-      const response = await strapiClient.get(`/sales?${params.toString()}`);
-      return response.data;
+      const url = `/api/sales${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch sales');
+      }
+      return data;
     } catch (error: any) {
-      if (error.response?.status === 404) {
+      if (error.message?.includes('404') || error.message?.includes('Not Found')) {
         return { data: [] };
       }
       throw error;
@@ -137,18 +148,50 @@ export const strapiApi = {
   },
 
   async createSales(data: any) {
-    const response = await strapiClient.post('/sales', { data });
-    return response.data;
+    // Use Next.js API route to proxy to Strapi
+    const response = await fetch('/api/sales', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to create sale');
+    }
+    return result;
   },
 
   async updateSales(id: string | number, data: any) {
-    const response = await strapiClient.put(`/sales/${id}`, { data });
-    return response.data;
+    // Use Next.js API route to proxy to Strapi
+    const response = await fetch(`/api/sales/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to update sale');
+    }
+    return result;
   },
 
   async deleteSales(id: string | number) {
-    const response = await strapiClient.delete(`/sales/${id}`);
-    return response.data;
+    // Use Next.js API route to proxy to Strapi
+    const response = await fetch(`/api/sales/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to delete sale');
+    }
+    return result;
   },
 };
 

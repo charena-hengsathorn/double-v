@@ -207,3 +207,4 @@ class MonteCarloSimulation:
         weight = index - lower
         return sorted_data[lower] * (1 - weight) + sorted_data[upper] * weight
 
+

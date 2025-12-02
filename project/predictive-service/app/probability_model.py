@@ -135,3 +135,4 @@ class ProbabilityModel:
             multiplier = scenario_multiplier or Decimal("1.0")
             return max(Decimal("0"), min(Decimal("1.0"), base_probability * multiplier))
 
+

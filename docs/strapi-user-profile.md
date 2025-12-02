@@ -70,3 +70,4 @@ User Profile permissions are configured in Strapi Admin:
 - Settings → Users & Permissions Plugin → Roles
 - Configure permissions for Authenticated and Public roles
 
+

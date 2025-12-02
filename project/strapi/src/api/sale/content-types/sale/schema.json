@@ -8,7 +8,7 @@
     "description": "Sales entries for cashflow tracking"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {

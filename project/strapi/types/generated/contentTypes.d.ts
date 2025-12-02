@@ -817,7 +817,7 @@ export interface ApiSaleSale extends Struct.CollectionTypeSchema {
     singularName: 'sale';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     client: Schema.Attribute.String & Schema.Attribute.Required;

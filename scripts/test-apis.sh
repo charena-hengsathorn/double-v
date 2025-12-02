@@ -68,3 +68,4 @@ echo "  1. Check if services are running: ./start-demo.sh"
 echo "  2. Check Strapi permissions: http://localhost:1337/admin"
 echo "  3. Check logs: tail -f /tmp/*.log"
 
+

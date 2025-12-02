@@ -218,3 +218,4 @@ echo "Predictive:" && curl -s http://localhost:8000/api/v1/health > /dev/null &&
 echo "Frontend:" && curl -s http://localhost:3000 > /dev/null && echo "✅ Running" || echo "❌ Not running"
 ```
 
+

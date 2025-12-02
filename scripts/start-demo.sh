@@ -80,3 +80,4 @@ echo "To stop all services:"
 echo "  kill $STRAPI_PID $PREDICTIVE_PID $FRONTEND_PID"
 echo ""
 
+

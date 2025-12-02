@@ -76,3 +76,4 @@ class TestAlertEndpoints:
         assert "alerts" in data
         assert "summary" in data
 
+

@@ -146,3 +146,4 @@ For technical issues or questions:
 3. **Monitor Risk Flags**: Pay attention to high-risk deals identified in the heatmap
 4. **Export Data**: Use export functionality (coming soon) to share insights with stakeholders
 
+

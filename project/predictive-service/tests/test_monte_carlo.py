@@ -76,3 +76,4 @@ class TestMonteCarloSimulation:
         
         assert sim._percentile([], 50) == 0.0
 
+

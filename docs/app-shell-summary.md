@@ -158,3 +158,4 @@ The API client (`lib/api.ts`) automatically includes JWT tokens:
    - Test touch targets
    - Verify no auto-zoom on input focus
 
+

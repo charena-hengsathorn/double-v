@@ -10,3 +10,4 @@ export default function CashflowLayout({
   return <ProtectedRoute>{children}</ProtectedRoute>;
 }
 
+
