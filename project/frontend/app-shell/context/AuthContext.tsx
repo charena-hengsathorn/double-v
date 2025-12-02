@@ -67,13 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Update with fresh user data
         setUser(response.data);
         localStorage.setItem('user', JSON.stringify(response.data));
-      } catch (error) {
-        // Token invalid or expired - try to use stored user as fallback
-        // If stored user exists, keep it; otherwise clear everything
-        if (!storedUser) {
-          localStorage.removeItem('jwt');
-          localStorage.removeItem('user');
-          setUser(null);
+      } catch (error: any) {
+        // 401 is expected when not logged in - suppress console errors
+        if (error.response?.status === 401) {
+          // Token invalid or expired - silently handle
+          if (!storedUser) {
+            localStorage.removeItem('jwt');
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+        } else {
+          // Other errors - try to use stored user as fallback
+          if (!storedUser) {
+            localStorage.removeItem('jwt');
+            localStorage.removeItem('user');
+            setUser(null);
+          }
         }
       }
     } catch (error) {
