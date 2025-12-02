@@ -62,27 +62,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          validateStatus: (status) => status < 500, // Don't throw on 401/403
         });
 
         // Update with fresh user data
-        setUser(response.data);
-        localStorage.setItem('user', JSON.stringify(response.data));
-      } catch (error: any) {
-        // 401 is expected when not logged in - suppress console errors
-        if (error.response?.status === 401) {
-          // Token invalid or expired - silently handle
-          if (!storedUser) {
-            localStorage.removeItem('jwt');
-            localStorage.removeItem('user');
-            setUser(null);
-          }
+        if (response.status === 200) {
+          setUser(response.data);
+          localStorage.setItem('user', JSON.stringify(response.data));
         } else {
-          // Other errors - try to use stored user as fallback
+          // 401/403 - token invalid or expired - silently handle
           if (!storedUser) {
             localStorage.removeItem('jwt');
             localStorage.removeItem('user');
             setUser(null);
           }
+        }
+      } catch (error: any) {
+        // Network errors or other issues - try to use stored user as fallback
+        if (!storedUser) {
+          localStorage.removeItem('jwt');
+          localStorage.removeItem('user');
+          setUser(null);
         }
       }
     } catch (error) {
