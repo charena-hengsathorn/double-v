@@ -165,7 +165,7 @@ export default function CashflowTable() {
         notes: formData.notes?.trim() || '',
       };
 
-      if (editingEntry) {
+      if (editingEntry && editingEntry.id) {
         await strapiApi.updateSales(editingEntry.id, submitData);
       } else {
         await strapiApi.createSales(submitData);
