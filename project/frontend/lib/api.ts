@@ -134,12 +134,33 @@ export const strapiApi = {
           'Content-Type': 'application/json',
         },
       });
-      const data = await response.json();
+      
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        // If 404, return empty array (content type not registered yet)
+        if (response.status === 404) {
+          return { data: [] };
+        }
+        throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // If 404 from Strapi, return empty array instead of error
+      if (response.status === 404 || (data.error && data.error.status === 404)) {
+        return { data: [] };
+      }
+      
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch sales');
+        throw new Error(data.error?.message || data.error || 'Failed to fetch sales');
       }
       return data;
     } catch (error: any) {
+      // Return empty array for 404 errors (content type not registered)
       if (error.message?.includes('404') || error.message?.includes('Not Found')) {
         return { data: [] };
       }
