@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    console.log('[API] POST /api/sales - Request body:', JSON.stringify(body, null, 2));
+    console.log('POST /api/sales - Request body:', body);
     
     const response = await fetch(`${STRAPI_URL}/api/sales`, {
       method: 'POST',
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       cache: 'no-store',
     });
 
-    console.log('[API] POST /api/sales - Strapi response status:', response.status);
+    console.log('POST /api/sales - Strapi response status:', response.status);
 
     if (!response.ok) {
       const contentType = response.headers.get('content-type');
@@ -70,15 +70,15 @@ export async function POST(request: NextRequest) {
         errorData = { error: text || `HTTP ${response.status}: ${response.statusText}` };
       }
       
-      console.error('[API] POST /api/sales - Error:', errorData);
+      console.error('POST /api/sales - Error:', errorData);
       return NextResponse.json(errorData, { status: response.status });
     }
 
     const data = await response.json();
-    console.log('[API] POST /api/sales - Success:', data);
+    console.log('POST /api/sales - Success:', data);
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
-    console.error('[API] Error creating sale:', error);
+    console.error('Error creating sale:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to create sale' },
       { status: 500 }
