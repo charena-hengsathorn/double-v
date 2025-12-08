@@ -74,3 +74,4 @@ echo -e "${YELLOW}⚠️  Vercel variables need to be added manually (see above)
 echo ""
 
 
+

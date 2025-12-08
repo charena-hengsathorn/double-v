@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+// Get Strapi URL - remove /api if present (we add it back)
+const STRAPI_BASE_URL = process.env.NEXT_PUBLIC_STRAPI_URL?.replace('/api', '') || 'http://localhost:1337';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/sales/${params.id}`, {
+    // Get Authorization header from incoming request
+    const authHeader = request.headers.get('authorization');
+    
+    // Build headers for Strapi request
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Forward Authorization header if present
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+    
+    const response = await fetch(`${STRAPI_BASE_URL}/api/sales/${params.id}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
@@ -47,11 +59,22 @@ export async function PUT(
   try {
     const body = await request.json();
     
-    const response = await fetch(`${STRAPI_URL}/api/sales/${params.id}`, {
+    // Get Authorization header from incoming request
+    const authHeader = request.headers.get('authorization');
+    
+    // Build headers for Strapi request
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Forward Authorization header if present
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+    
+    const response = await fetch(`${STRAPI_BASE_URL}/api/sales/${params.id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
       cache: 'no-store',
     });
@@ -86,11 +109,22 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/sales/${params.id}`, {
+    // Get Authorization header from incoming request
+    const authHeader = request.headers.get('authorization');
+    
+    // Build headers for Strapi request
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Forward Authorization header if present
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+    
+    const response = await fetch(`${STRAPI_BASE_URL}/api/sales/${params.id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 

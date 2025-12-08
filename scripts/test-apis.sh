@@ -69,3 +69,4 @@ echo "  2. Check Strapi permissions: http://localhost:1337/admin"
 echo "  3. Check logs: tail -f /tmp/*.log"
 
 
+

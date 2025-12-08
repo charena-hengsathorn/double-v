@@ -1,0 +1,41 @@
+{
+  "name": "double-v-api-server",
+  "description": "Unified API server for Double V dashboard",
+  "repository": "https://github.com/charena-hengsathorn/double-v",
+  "keywords": ["api", "express", "proxy", "double-v"],
+  "success_url": "/health",
+  "env": {
+    "NODE_ENV": {
+      "required": true,
+      "value": "production"
+    },
+    "PORT": {
+      "required": false,
+      "value": "4000"
+    },
+    "STRAPI_URL": {
+      "required": true,
+      "description": "URL of the Strapi CMS service"
+    },
+    "PREDICTIVE_SERVICE_URL": {
+      "required": true,
+      "description": "URL of the Predictive Service"
+    },
+    "CORS_ORIGINS": {
+      "required": true,
+      "description": "Comma-separated list of allowed CORS origins"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
+

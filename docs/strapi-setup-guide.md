@@ -110,3 +110,4 @@ For production:
 5. **Set up proper database** (PostgreSQL) instead of SQLite
 
 
+

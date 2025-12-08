@@ -128,11 +128,21 @@ export const strapiApi = {
         });
       }
       const url = `/api/sales${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      // Get auth token and build headers
+      const token = getAuthToken();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Include Authorization header if token exists
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
       });
       
       // Handle non-JSON responses
@@ -170,11 +180,19 @@ export const strapiApi = {
 
   async createSales(data: any) {
     // Use Next.js API route to proxy to Strapi
+    const token = getAuthToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Include Authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch('/api/sales', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({ data }),
     });
     
@@ -196,11 +214,19 @@ export const strapiApi = {
 
   async updateSales(id: string | number, data: any) {
     // Use Next.js API route to proxy to Strapi
+    const token = getAuthToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Include Authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(`/api/sales/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({ data }),
     });
     const result = await response.json();
@@ -212,11 +238,19 @@ export const strapiApi = {
 
   async deleteSales(id: string | number) {
     // Use Next.js API route to proxy to Strapi
+    const token = getAuthToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Include Authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(`/api/sales/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
     });
     const result = await response.json();
     if (!response.ok) {

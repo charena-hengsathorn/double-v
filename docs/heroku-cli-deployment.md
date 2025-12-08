@@ -163,3 +163,4 @@ After deployment:
    - Strapi: https://double-v-strapi.herokuapp.com
    - Predictive Service: https://double-v-predictive.herokuapp.com
 
+

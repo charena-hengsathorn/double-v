@@ -23,7 +23,9 @@ from app.models import (
     StrapiSyncResponse
 )
 
-load_dotenv()
+# Load .env.local first (prioritized), then fallback to .env
+load_dotenv('.env.local')
+load_dotenv()  # Fallback to .env if .env.local doesn't exist
 
 app = FastAPI(
     title="Double V Predictive Service",

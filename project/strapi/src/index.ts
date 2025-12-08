@@ -51,13 +51,23 @@ export default {
                 },
               });
 
-            if (!existing) {
+            if (existing) {
+              // Update existing permission to enable it
+              await strapi
+                .query('plugin::users-permissions.permission')
+                .update({
+                  where: { id: existing.id },
+                  data: { enabled: true },
+                });
+            } else {
+              // Create new permission and enable it
               await strapi
                 .query('plugin::users-permissions.permission')
                 .create({
                   data: {
                     action: actionName,
                     role: publicRole.id,
+                    enabled: true, // Enable the permission
                   },
                 });
             }
