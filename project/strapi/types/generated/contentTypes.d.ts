@@ -451,6 +451,7 @@ export interface ApiBillingBilling extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
+    customer: Schema.Attribute.String;
     deal: Schema.Attribute.Relation<
       'manyToOne',
       'api::pipeline-deal.pipeline-deal'
@@ -832,6 +833,7 @@ export interface ApiSaleSale extends Struct.CollectionTypeSchema {
     project_profit: Schema.Attribute.Decimal & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     sale_amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    sale_date: Schema.Attribute.Date;
     status: Schema.Attribute.Enumeration<['Confirmed', 'Pending', 'Closed']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'Pending'>;

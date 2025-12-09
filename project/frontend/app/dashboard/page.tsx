@@ -8,6 +8,7 @@ import {
   AccountBalance as AccountBalanceIcon,
   Summarize as SummarizeIcon,
   AccountBalanceWallet as CashflowIcon,
+  PointOfSale as SalesIcon,
 } from '@mui/icons-material';
 
 const dashboardCards = [
@@ -39,6 +40,13 @@ const dashboardCards = [
     icon: CashflowIcon,
     color: 'info',
   },
+  {
+    title: 'Sales',
+    description: 'Track all sales entries and financial metrics',
+    href: '/dashboard/sales',
+    icon: SalesIcon,
+    color: 'warning',
+  },
 ];
 
 export default function DashboardHome() {
@@ -57,7 +65,7 @@ export default function DashboardHome() {
         </Typography>
       </motion.div>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' }, gap: 3 }}>
         {dashboardCards.map((card, index) => {
           const Icon = card.icon;
           return (

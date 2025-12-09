@@ -99,6 +99,73 @@ export const strapiApi = {
     }
   },
 
+  async createBillings(data: any) {
+    // Use Next.js API route to proxy to Strapi
+    const token = getAuthToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch('/api/billings', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ data }),
+    });
+    
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to create billing');
+    }
+    return result;
+  },
+
+  async updateBillings(id: string | number, data: any) {
+    const token = getAuthToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`/api/billings/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to update billing');
+    }
+    return result;
+  },
+
+  async deleteBillings(id: string | number) {
+    const token = getAuthToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`/api/billings/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to delete billing');
+    }
+    return result;
+  },
+
   async getRiskFlags(filters?: Record<string, any>) {
     try {
       const params = new URLSearchParams();

@@ -17,6 +17,10 @@
       "unique": true,
       "required": true
     },
+    "customer": {
+      "type": "string",
+      "required": false
+    },
     "invoice_number": {
       "type": "string",
       "required": false

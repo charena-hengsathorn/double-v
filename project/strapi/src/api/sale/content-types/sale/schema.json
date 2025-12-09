@@ -38,6 +38,10 @@
       "default": "Pending",
       "required": true
     },
+    "sale_date": {
+      "type": "date",
+      "required": false
+    },
     "notes": {
       "type": "text"
     }

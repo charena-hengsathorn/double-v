@@ -24,6 +24,7 @@ import {
   AccountBalance as AccountBalanceIcon,
   Summarize as SummarizeIcon,
   AccountBalanceWallet as CashflowIcon,
+  AttachMoney as SalesIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -39,6 +40,7 @@ const dashboardSubPages = [
   { name: 'Pipeline Integrity', href: '/dashboard/pipeline-integrity', icon: AssessmentIcon },
   { name: 'Financials', href: '/dashboard/financials', icon: AccountBalanceIcon },
   { name: 'Executive Summary', href: '/dashboard/executive-summary', icon: SummarizeIcon },
+  { name: 'Sales', href: '/dashboard/sales', icon: SalesIcon },
   { name: 'Cashflow', href: '/dashboard/cashflow', icon: CashflowIcon },
 ];
 
