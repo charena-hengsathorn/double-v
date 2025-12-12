@@ -67,19 +67,54 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (authHeader) { headers['Authorization'] = authHeader; }
     
-    const response = await fetch(`${STRAPI_BASE_URL}/api/billings/${params.id}`, {
+    const strapiUrl = `${STRAPI_BASE_URL}/api/billings/${params.id}`;
+    console.log(`[DELETE] Forwarding delete request to Strapi: ${strapiUrl}`);
+    console.log(`[DELETE] Request headers:`, JSON.stringify(headers, null, 2));
+    
+    const response = await fetch(strapiUrl, {
       method: 'DELETE',
       headers,
       cache: 'no-store',
     });
 
+    console.log(`[DELETE] Strapi response status: ${response.status}`);
+    console.log(`[DELETE] Strapi response headers:`, Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      const data = await response.json();
-      return NextResponse.json(data, { status: response.status });
+      let errorData;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      } else {
+        const text = await response.text().catch(() => 'Unknown error');
+        errorData = { error: text || `HTTP ${response.status}: ${response.statusText}` };
+      }
+      console.error(`[DELETE] Strapi error response:`, errorData);
+      return NextResponse.json(errorData, { status: response.status });
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    // Strapi DELETE returns 204 No Content on success (empty body)
+    if (response.status === 204) {
+      console.log(`[DELETE] Successfully deleted billing ${params.id} from Strapi (204 No Content)`);
+      return NextResponse.json({ success: true, message: 'Deleted successfully' }, { status: 200 });
+    }
+
+    // If status is 200, try to parse JSON response
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        console.log(`[DELETE] Successfully deleted billing ${params.id} from Strapi with response:`, result);
+        return NextResponse.json(result, { status: 200 });
+      }
+    } catch (e) {
+      // If JSON parsing fails, still return success since status is OK
+      console.log(`[DELETE] Successfully deleted billing ${params.id} from Strapi (non-JSON response)`);
+    }
+
+    return NextResponse.json({ success: true, message: 'Deleted successfully' }, { status: 200 });
   } catch (error: any) {
+    console.error(`[DELETE] Error deleting billing ${params.id}:`, error);
     return NextResponse.json(
       { error: error.message || 'Failed to delete billing' },
       { status: 500 }

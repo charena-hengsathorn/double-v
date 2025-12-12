@@ -81,18 +81,43 @@ export const strapiApi = {
 
   async getBillings(filters?: Record<string, any>) {
     try {
+      // Use Next.js API route to proxy to Strapi
       const params = new URLSearchParams();
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           params.append(`filters[${key}]`, value);
         });
       }
-      params.append('populate', 'deal,milestone');
-      const response = await strapiClient.get(`/billings?${params.toString()}`);
-      return response.data;
+      const url = `/api/billings${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      // Get auth token and build headers
+      const token = getAuthToken();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { data: [] };
+        }
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
     } catch (error: any) {
       // If 404 (content type not found or no permissions), return empty data
-      if (error.response?.status === 404) {
+      if (error.message?.includes('404')) {
         return { data: [] };
       }
       throw error;
@@ -155,14 +180,42 @@ export const strapiApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
+    console.log(`[API] Deleting billing entry with ID: ${id}`);
     const response = await fetch(`/api/billings/${id}`, {
       method: 'DELETE',
       headers,
     });
-    const result = await response.json();
+    
+    console.log(`[API] Delete response status: ${response.status}`);
+    
     if (!response.ok) {
-      throw new Error(result.error || 'Failed to delete billing');
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        const text = await response.text().catch(() => 'Unknown error');
+        errorData = { error: text || `HTTP ${response.status}: ${response.statusText}` };
+      }
+      console.error(`[API] Delete failed:`, errorData);
+      throw new Error(errorData.error || 'Failed to delete billing');
     }
+    
+    // Handle both JSON and empty responses
+    let result;
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        // Empty response means success
+        result = { success: true, message: 'Deleted successfully' };
+      }
+    } catch (e) {
+      // If JSON parsing fails, still consider it success if status is OK
+      result = { success: true, message: 'Deleted successfully' };
+    }
+    
+    console.log(`[API] Successfully deleted billing entry ${id}`, result);
     return result;
   },
 

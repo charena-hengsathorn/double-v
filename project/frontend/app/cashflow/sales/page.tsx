@@ -390,10 +390,10 @@ export default function SalesTablePage() {
               <Button
                 variant="outlined"
                 component={Link}
-                href="/cashflow/payments"
+                href="/cashflow/billings"
                 sx={{ textTransform: 'none', borderRadius: 2 }}
               >
-                Payment Table
+                Billing Table
               </Button>
             </Box>
             <Button
