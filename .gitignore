@@ -51,3 +51,4 @@ project/strapi/.temp/
 # Temporary files
 *.tmp
 .cache/
+.vercel

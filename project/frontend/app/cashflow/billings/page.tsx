@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import { strapiApi } from '@/lib/api';
 import { motion } from 'framer-motion';
+import CashflowTabs from '../components/CashflowTabs';
 
 interface BillingEntry {
   id?: string;
@@ -506,33 +507,14 @@ export default function BillingsTablePage() {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
               Billing table for cashflow tracking
             </Typography>
-            <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 0.5 }}>
-              <Link
-                href="/cashflow"
-                style={{
-                  textDecoration: 'none',
-                  color: 'inherit',
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'text.secondary',
-                    '&:hover': {
-                      color: 'text.primary',
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Cashflow
-                </Typography>
-              </Link>
-              <Typography variant="body2" color="text.primary">
-                Billing Table
-              </Typography>
-            </Breadcrumbs>
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-end' }}>
+        </Box>
+      </motion.div>
+
+      {/* Sub Navigation Tabs */}
+      <CashflowTabs />
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-end', mb: 3 }}>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button
                 variant="outlined"
