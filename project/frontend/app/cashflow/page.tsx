@@ -10,7 +10,6 @@ import {
   Alert,
   Card,
   CardContent,
-  Grid,
   Button,
   Breadcrumbs,
   Table,
@@ -334,11 +333,11 @@ export default function CashflowOverviewPage() {
       )}
 
       {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
         {summaryCards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <Grid item xs={12} sm={6} md={3} key={card.title}>
+            <Box key={card.title}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -378,10 +377,10 @@ export default function CashflowOverviewPage() {
                   </Card>
                 </Link>
               </motion.div>
-            </Grid>
+            </Box>
           );
         })}
-      </Grid>
+      </Box>
 
       {/* Detailed Cashflow Table */}
       <motion.div

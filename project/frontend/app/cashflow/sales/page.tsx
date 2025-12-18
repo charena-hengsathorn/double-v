@@ -354,40 +354,40 @@ export default function SalesTablePage() {
             </Typography>
           </Box>
         </Box>
+      </motion.div>
 
-        {/* Sub Navigation Tabs */}
-        <CashflowTabs />
+      {/* Sub Navigation Tabs */}
+      <CashflowTabs />
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-end', mb: 3 }}>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                component={Link}
-                href="/cashflow/sales"
-                sx={{ textTransform: 'none', borderRadius: 2 }}
-              >
-                Sales Table
-              </Button>
-              <Button
-                variant="outlined"
-                component={Link}
-                href="/cashflow/billings"
-                sx={{ textTransform: 'none', borderRadius: 2 }}
-              >
-                Billing Table
-              </Button>
-            </Box>
-            <Button
-              variant="outlined"
-              color="secondary"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenDrawer()}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
-            >
-              Add Sales Entry
-            </Button>
-          </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-end', mb: 3 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="contained"
+            component={Link}
+            href="/cashflow/sales"
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Sales Table
+          </Button>
+          <Button
+            variant="outlined"
+            component={Link}
+            href="/cashflow/billings"
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Billing Table
+          </Button>
         </Box>
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenDrawer()}
+          sx={{ textTransform: 'none', borderRadius: 2 }}
+        >
+          Add Sales Entry
+        </Button>
+      </Box>
 
         {/* Filters */}
         <motion.div
@@ -476,7 +476,6 @@ export default function SalesTablePage() {
             </CardContent>
           </Card>
         </motion.div>
-      </motion.div>
 
       {/* Sales Table */}
       <motion.div

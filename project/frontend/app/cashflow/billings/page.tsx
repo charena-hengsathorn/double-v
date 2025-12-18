@@ -514,44 +514,43 @@ export default function BillingsTablePage() {
       {/* Sub Navigation Tabs */}
       <CashflowTabs />
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-end', mb: 3 }}>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="outlined"
-                component={Link}
-                href="/cashflow/sales"
-                sx={{ textTransform: 'none', borderRadius: 2 }}
-              >
-                Sales Table
-              </Button>
-              <Button
-                variant="contained"
-                component={Link}
-                href="/cashflow/billings"
-                sx={{ textTransform: 'none', borderRadius: 2 }}
-              >
-                Billing Table
-              </Button>
-            </Box>
-            <Button
-              variant="outlined"
-              color="secondary"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenDrawer()}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
-            >
-              Add Billing Entry
-            </Button>
-          </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-end', mb: 3 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            component={Link}
+            href="/cashflow/sales"
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Sales Table
+          </Button>
+          <Button
+            variant="contained"
+            component={Link}
+            href="/cashflow/billings"
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Billing Table
+          </Button>
         </Box>
-
-        {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenDrawer()}
+          sx={{ textTransform: 'none', borderRadius: 2 }}
         >
-          <Card sx={{ mb: 3, borderRadius: 3 }}>
+          Add Billing Entry
+        </Button>
+      </Box>
+
+      {/* Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <Card sx={{ mb: 3, borderRadius: 3 }}>
             <CardContent sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                 <FilterIcon sx={{ color: 'text.secondary' }} />
@@ -634,15 +633,14 @@ export default function BillingsTablePage() {
             </CardContent>
           </Card>
         </motion.div>
-      </motion.div>
 
-        {/* Billings Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <Card>
+      {/* Billings Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+        <Card>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 400 }}>
                 Billing Table
