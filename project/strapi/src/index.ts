@@ -56,6 +56,13 @@ export default {
         { uid: 'api::risk-flag.risk-flag', name: 'risk-flag' },
         { uid: 'api::user-profile.user-profile', name: 'user-profile' },
         { uid: 'api::sale.sale', name: 'sales' },
+        // Branch-specific content types
+        { uid: 'api::construction-sale.construction-sale', name: 'construction-sale' },
+        { uid: 'api::construction-billing.construction-billing', name: 'construction-billing' },
+        { uid: 'api::loose-furniture-sale.loose-furniture-sale', name: 'loose-furniture-sale' },
+        { uid: 'api::loose-furniture-billing.loose-furniture-billing', name: 'loose-furniture-billing' },
+        { uid: 'api::interior-design-sale.interior-design-sale', name: 'interior-design-sale' },
+        { uid: 'api::interior-design-billing.interior-design-billing', name: 'interior-design-billing' },
       ];
 
       let totalConfigured = 0;

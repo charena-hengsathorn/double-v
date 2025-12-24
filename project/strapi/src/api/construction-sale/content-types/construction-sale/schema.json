@@ -1,9 +1,9 @@
 {
   "kind": "collectionType",
-  "collectionName": "sales",
+  "collectionName": "construction_sales",
   "info": {
-    "singularName": "sale",
-    "pluralName": "sales",
+    "singularName": "construction-sale",
+    "pluralName": "construction-sales",
     "displayName": "Construction - Sales",
     "description": "Construction sales entries for cashflow tracking"
   },

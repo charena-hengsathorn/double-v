@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { Box } from '@mui/material';
 import Sidebar from './Sidebar';
+import TopBar from './TopBar';
 import { motion } from 'framer-motion';
 
 interface AppShellProps {
@@ -16,7 +17,10 @@ export default function AppShell({ children }: AppShellProps) {
       <Sidebar />
       
       {/* Main Content Area */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Top Bar with Branch Switcher */}
+        <TopBar />
+        
         {/* Page Content */}
         <Box
           component={motion.main}

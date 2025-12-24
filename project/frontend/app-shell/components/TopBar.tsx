@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import BranchSwitcher from './BranchSwitcher';
 
 export default function TopBar() {
   const { user, logout } = useAuth();
@@ -59,7 +60,10 @@ export default function TopBar() {
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
-      <Toolbar sx={{ justifyContent: 'flex-end', px: { xs: 2, sm: 3 } }}>
+      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          <BranchSwitcher />
+        </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>

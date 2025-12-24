@@ -1,11 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "sales",
+  "collectionName": "loose_furniture_sales",
   "info": {
-    "singularName": "sale",
-    "pluralName": "sales",
-    "displayName": "Construction - Sales",
-    "description": "Construction sales entries for cashflow tracking"
+    "singularName": "loose-furniture-sale",
+    "pluralName": "loose-furniture-sales",
+    "displayName": "Loose Furniture - Sales",
+    "description": "Loose furniture sales entries for cashflow tracking"
   },
   "options": {
     "draftAndPublish": false

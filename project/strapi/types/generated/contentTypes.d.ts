@@ -433,8 +433,8 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
 export interface ApiBillingBilling extends Struct.CollectionTypeSchema {
   collectionName: 'billings';
   info: {
-    description: 'Billing records and invoice information';
-    displayName: 'Billing';
+    description: 'Construction billing records and invoice information';
+    displayName: 'Construction - Billings';
     pluralName: 'billings';
     singularName: 'billing';
   };
@@ -511,6 +511,87 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     region: Schema.Attribute.String;
     segment: Schema.Attribute.Enumeration<['enterprise', 'mid-market', 'smb']>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiConstructionBillingConstructionBilling
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'construction_billings';
+  info: {
+    description: 'Construction billing records and invoice information';
+    displayName: 'Construction - Billings';
+    pluralName: 'construction-billings';
+    singularName: 'construction-billing';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    billing_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    collected_date: Schema.Attribute.Date;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
+    customer: Schema.Attribute.String;
+    invoice_date: Schema.Attribute.Date & Schema.Attribute.Required;
+    invoice_number: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::construction-billing.construction-billing'
+    > &
+      Schema.Attribute.Private;
+    payment_reference: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    recognition_month: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<
+      ['draft', 'sent', 'paid', 'overdue', 'cancelled']
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiConstructionSaleConstructionSale
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'construction_sales';
+  info: {
+    description: 'Construction sales entries for cashflow tracking';
+    displayName: 'Construction - Sales';
+    pluralName: 'construction-sales';
+    singularName: 'construction-sale';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    client: Schema.Attribute.String & Schema.Attribute.Required;
+    construction_cost: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::construction-sale.construction-sale'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    project_profit: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    sale_amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    sale_date: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<['Confirmed', 'Pending', 'Closed']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Pending'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -613,6 +694,168 @@ export interface ApiForecastSnapshotForecastSnapshot
     snapshot_id: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiInteriorDesignBillingInteriorDesignBilling
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'interior_design_billings';
+  info: {
+    description: 'Interior design billing records and invoice information';
+    displayName: 'Interior Design - Billings';
+    pluralName: 'interior-design-billings';
+    singularName: 'interior-design-billing';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    billing_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    collected_date: Schema.Attribute.Date;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
+    customer: Schema.Attribute.String;
+    invoice_date: Schema.Attribute.Date & Schema.Attribute.Required;
+    invoice_number: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::interior-design-billing.interior-design-billing'
+    > &
+      Schema.Attribute.Private;
+    payment_reference: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    recognition_month: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<
+      ['draft', 'sent', 'paid', 'overdue', 'cancelled']
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiInteriorDesignSaleInteriorDesignSale
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'interior_design_sales';
+  info: {
+    description: 'Interior design sales entries for cashflow tracking';
+    displayName: 'Interior Design - Sales';
+    pluralName: 'interior-design-sales';
+    singularName: 'interior-design-sale';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    client: Schema.Attribute.String & Schema.Attribute.Required;
+    construction_cost: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::interior-design-sale.interior-design-sale'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    project_profit: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    sale_amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    sale_date: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<['Confirmed', 'Pending', 'Closed']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiLooseFurnitureBillingLooseFurnitureBilling
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'loose_furniture_billings';
+  info: {
+    description: 'Loose furniture billing records and invoice information';
+    displayName: 'Loose Furniture - Billings';
+    pluralName: 'loose-furniture-billings';
+    singularName: 'loose-furniture-billing';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    billing_id: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    collected_date: Schema.Attribute.Date;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
+    customer: Schema.Attribute.String;
+    invoice_date: Schema.Attribute.Date & Schema.Attribute.Required;
+    invoice_number: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::loose-furniture-billing.loose-furniture-billing'
+    > &
+      Schema.Attribute.Private;
+    payment_reference: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    recognition_month: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<
+      ['draft', 'sent', 'paid', 'overdue', 'cancelled']
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiLooseFurnitureSaleLooseFurnitureSale
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'loose_furniture_sales';
+  info: {
+    description: 'Loose furniture sales entries for cashflow tracking';
+    displayName: 'Loose Furniture - Sales';
+    pluralName: 'loose-furniture-sales';
+    singularName: 'loose-furniture-sale';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    client: Schema.Attribute.String & Schema.Attribute.Required;
+    construction_cost: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::loose-furniture-sale.loose-furniture-sale'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    project_profit: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    sale_amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    sale_date: Schema.Attribute.Date;
+    status: Schema.Attribute.Enumeration<['Confirmed', 'Pending', 'Closed']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Pending'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -812,8 +1055,8 @@ export interface ApiRiskFlagRiskFlag extends Struct.CollectionTypeSchema {
 export interface ApiSaleSale extends Struct.CollectionTypeSchema {
   collectionName: 'sales';
   info: {
-    description: 'Sales entries for cashflow tracking';
-    displayName: 'Sales';
+    description: 'Construction sales entries for cashflow tracking';
+    displayName: 'Construction - Sales';
     pluralName: 'sales';
     singularName: 'sale';
   };
@@ -1397,8 +1640,14 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::billing.billing': ApiBillingBilling;
       'api::client.client': ApiClientClient;
+      'api::construction-billing.construction-billing': ApiConstructionBillingConstructionBilling;
+      'api::construction-sale.construction-sale': ApiConstructionSaleConstructionSale;
       'api::deal-milestone.deal-milestone': ApiDealMilestoneDealMilestone;
       'api::forecast-snapshot.forecast-snapshot': ApiForecastSnapshotForecastSnapshot;
+      'api::interior-design-billing.interior-design-billing': ApiInteriorDesignBillingInteriorDesignBilling;
+      'api::interior-design-sale.interior-design-sale': ApiInteriorDesignSaleInteriorDesignSale;
+      'api::loose-furniture-billing.loose-furniture-billing': ApiLooseFurnitureBillingLooseFurnitureBilling;
+      'api::loose-furniture-sale.loose-furniture-sale': ApiLooseFurnitureSaleLooseFurnitureSale;
       'api::pipeline-deal.pipeline-deal': ApiPipelineDealPipelineDeal;
       'api::project.project': ApiProjectProject;
       'api::risk-flag.risk-flag': ApiRiskFlagRiskFlag;

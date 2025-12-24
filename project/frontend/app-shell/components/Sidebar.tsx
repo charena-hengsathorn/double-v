@@ -34,7 +34,9 @@ const drawerWidth = 280;
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: DashboardIcon },
-  { name: 'Cashflow', href: '/cashflow', icon: CashflowIcon },
+  { name: 'Construction', href: '/construction/overview', icon: CashflowIcon },
+  { name: 'Loose Furniture', href: '/loose-furniture/overview', icon: CashflowIcon },
+  { name: 'Interior Design', href: '/interior-design/overview', icon: CashflowIcon },
 ];
 
 const dashboardSubPages = [
@@ -220,79 +222,88 @@ export default function Sidebar() {
             </>
           )}
 
-          {/* Cashflow Sub-pages */}
-          {pathname.startsWith('/cashflow') && (
-            <>
-              <Divider sx={{ my: 1, mx: 2 }} />
-              <Typography
-                variant="caption"
-                sx={{
-                  px: 2,
-                  py: 1,
-                  color: 'text.secondary',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  fontSize: '0.7rem',
-                  fontWeight: 500,
-                }}
-              >
-                Cashflow Sections
-              </Typography>
-              {[
-                { name: 'Overview', href: '/cashflow', icon: CashflowIcon },
-                { name: 'Sales Table', href: '/cashflow/sales', icon: SalesIcon },
-                { name: 'Billings Table', href: '/cashflow/billings', icon: BillingsIcon },
-              ].map((item, index) => {
-                const isActive = pathname === item.href || (item.href === '/cashflow' && pathname === '/cashflow');
-                const Icon = item.icon;
-                
-                return (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: (navigation.length + index) * 0.05 }}
-                  >
-                    <ListItem disablePadding sx={{ mb: 0.5 }}>
-                      <Link href={item.href} style={{ textDecoration: 'none', width: '100%' }}>
-                        <ListItemButton
-                          sx={{
-                            borderRadius: 1.5,
-                            bgcolor: isActive ? 'rgba(44, 44, 44, 0.08)' : 'transparent',
-                            color: isActive ? 'text.primary' : 'text.secondary',
-                            fontWeight: isActive ? 500 : 400,
-                            pl: 4,
-                            '&:hover': {
-                              bgcolor: isActive ? 'rgba(44, 44, 44, 0.12)' : 'rgba(44, 44, 44, 0.04)',
-                            },
-                            transition: 'all 0.2s ease-in-out',
-                            py: 1.5,
-                            px: 2,
-                          }}
-                        >
-                          <ListItemIcon
+          {/* Branch Sub-pages */}
+          {(pathname.startsWith('/construction') || pathname.startsWith('/loose-furniture') || pathname.startsWith('/interior-design')) && (() => {
+            const branchPrefix = pathname.startsWith('/construction') ? '/construction' : 
+                               pathname.startsWith('/loose-furniture') ? '/loose-furniture' : 
+                               '/interior-design';
+            const branchName = pathname.startsWith('/construction') ? 'Construction' : 
+                              pathname.startsWith('/loose-furniture') ? 'Loose Furniture' : 
+                              'Interior Design';
+            
+            return (
+              <>
+                <Divider sx={{ my: 1, mx: 2 }} />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    color: 'text.secondary',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontSize: '0.7rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  {branchName} Sections
+                </Typography>
+                {[
+                  { name: 'Overview', href: `${branchPrefix}/overview`, icon: CashflowIcon },
+                  { name: 'Sales', href: `${branchPrefix}/sales`, icon: SalesIcon },
+                  { name: 'Billings', href: `${branchPrefix}/billings`, icon: BillingsIcon },
+                ].map((item, index) => {
+                  const isActive = pathname === item.href || (item.href === `${branchPrefix}/overview` && pathname === branchPrefix);
+                  const Icon = item.icon;
+                  
+                  return (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: (navigation.length + index) * 0.05 }}
+                    >
+                      <ListItem disablePadding sx={{ mb: 0.5 }}>
+                        <Link href={item.href} style={{ textDecoration: 'none', width: '100%' }}>
+                          <ListItemButton
                             sx={{
+                              borderRadius: 1.5,
+                              bgcolor: isActive ? 'rgba(44, 44, 44, 0.08)' : 'transparent',
                               color: isActive ? 'text.primary' : 'text.secondary',
-                              minWidth: 40,
+                              fontWeight: isActive ? 500 : 400,
+                              pl: 4,
+                              '&:hover': {
+                                bgcolor: isActive ? 'rgba(44, 44, 44, 0.12)' : 'rgba(44, 44, 44, 0.04)',
+                              },
+                              transition: 'all 0.2s ease-in-out',
+                              py: 1.5,
+                              px: 2,
                             }}
                           >
-                            <Icon />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={item.name}
-                            primaryTypographyProps={{
-                              fontWeight: isActive ? 500 : 400,
-                              fontSize: '0.9rem',
-                            }}
-                          />
-                        </ListItemButton>
-                      </Link>
-                    </ListItem>
-                  </motion.div>
-                );
-              })}
-            </>
-          )}
+                            <ListItemIcon
+                              sx={{
+                                color: isActive ? 'text.primary' : 'text.secondary',
+                                minWidth: 40,
+                              }}
+                            >
+                              <Icon />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={item.name}
+                              primaryTypographyProps={{
+                                fontWeight: isActive ? 500 : 400,
+                                fontSize: '0.9rem',
+                              }}
+                            />
+                          </ListItemButton>
+                        </Link>
+                      </ListItem>
+                    </motion.div>
+                  );
+                })}
+              </>
+            );
+          })()}
         </List>
       </Box>
 

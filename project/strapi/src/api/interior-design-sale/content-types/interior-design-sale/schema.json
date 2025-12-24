@@ -1,11 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "sales",
+  "collectionName": "interior_design_sales",
   "info": {
-    "singularName": "sale",
-    "pluralName": "sales",
-    "displayName": "Construction - Sales",
-    "description": "Construction sales entries for cashflow tracking"
+    "singularName": "interior-design-sale",
+    "pluralName": "interior-design-sales",
+    "displayName": "Interior Design - Sales",
+    "description": "Interior design sales entries for cashflow tracking"
   },
   "options": {
     "draftAndPublish": false

@@ -378,6 +378,248 @@ export const strapiApi = {
     }
     return result;
   },
+
+  // Branch-specific API methods
+  async getConstructionSales(filters?: Record<string, any>) {
+    return this.getBranchSales('construction-sales', filters);
+  },
+
+  async getConstructionBillings(filters?: Record<string, any>) {
+    return this.getBranchBillings('construction-billings', filters);
+  },
+
+  async getLooseFurnitureSales(filters?: Record<string, any>) {
+    return this.getBranchSales('loose-furniture-sales', filters);
+  },
+
+  async getLooseFurnitureBillings(filters?: Record<string, any>) {
+    return this.getBranchBillings('loose-furniture-billings', filters);
+  },
+
+  async getInteriorDesignSales(filters?: Record<string, any>) {
+    return this.getBranchSales('interior-design-sales', filters);
+  },
+
+  async getInteriorDesignBillings(filters?: Record<string, any>) {
+    return this.getBranchBillings('interior-design-billings', filters);
+  },
+
+  async createConstructionSales(data: any) {
+    return this.createBranchSales('construction-sales', data);
+  },
+
+  async createConstructionBillings(data: any) {
+    return this.createBranchBillings('construction-billings', data);
+  },
+
+  async createLooseFurnitureSales(data: any) {
+    return this.createBranchSales('loose-furniture-sales', data);
+  },
+
+  async createLooseFurnitureBillings(data: any) {
+    return this.createBranchBillings('loose-furniture-billings', data);
+  },
+
+  async createInteriorDesignSales(data: any) {
+    return this.createBranchSales('interior-design-sales', data);
+  },
+
+  async createInteriorDesignBillings(data: any) {
+    return this.createBranchBillings('interior-design-billings', data);
+  },
+
+  async updateConstructionSales(id: string | number, data: any) {
+    return this.updateBranchSales('construction-sales', id, data);
+  },
+
+  async updateConstructionBillings(id: string | number, data: any) {
+    return this.updateBranchBillings('construction-billings', id, data);
+  },
+
+  async updateLooseFurnitureSales(id: string | number, data: any) {
+    return this.updateBranchSales('loose-furniture-sales', id, data);
+  },
+
+  async updateLooseFurnitureBillings(id: string | number, data: any) {
+    return this.updateBranchBillings('loose-furniture-billings', id, data);
+  },
+
+  async updateInteriorDesignSales(id: string | number, data: any) {
+    return this.updateBranchSales('interior-design-sales', id, data);
+  },
+
+  async updateInteriorDesignBillings(id: string | number, data: any) {
+    return this.updateBranchBillings('interior-design-billings', id, data);
+  },
+
+  async deleteConstructionSales(id: string | number) {
+    return this.deleteBranchSales('construction-sales', id);
+  },
+
+  async deleteConstructionBillings(id: string | number) {
+    return this.deleteBranchBillings('construction-billings', id);
+  },
+
+  async deleteLooseFurnitureSales(id: string | number) {
+    return this.deleteBranchSales('loose-furniture-sales', id);
+  },
+
+  async deleteLooseFurnitureBillings(id: string | number) {
+    return this.deleteBranchBillings('loose-furniture-billings', id);
+  },
+
+  async deleteInteriorDesignSales(id: string | number) {
+    return this.deleteBranchSales('interior-design-sales', id);
+  },
+
+  async deleteInteriorDesignBillings(id: string | number) {
+    return this.deleteBranchBillings('interior-design-billings', id);
+  },
+
+  // Helper methods for branch-specific operations
+  async getBranchSales(endpoint: string, filters?: Record<string, any>) {
+    try {
+      const params = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          params.append(`filters[${key}]`, value);
+        });
+      }
+      const url = `/api/${endpoint}${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      const token = getAuthToken();
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) { headers['Authorization'] = `Bearer ${token}`; }
+      
+      const response = await fetch(url, { method: 'GET', headers });
+      if (!response.ok) {
+        if (response.status === 404) return { data: [] };
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      return await response.json();
+    } catch (error: any) {
+      if (error.message?.includes('404')) return { data: [] };
+      throw error;
+    }
+  },
+
+  async getBranchBillings(endpoint: string, filters?: Record<string, any>) {
+    try {
+      const params = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          params.append(`filters[${key}]`, value);
+        });
+      }
+      const url = `/api/${endpoint}${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      const token = getAuthToken();
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) { headers['Authorization'] = `Bearer ${token}`; }
+      
+      const response = await fetch(url, { method: 'GET', headers });
+      if (!response.ok) {
+        if (response.status === 404) return { data: [] };
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      return await response.json();
+    } catch (error: any) {
+      if (error.message?.includes('404')) return { data: [] };
+      throw error;
+    }
+  },
+
+  async createBranchSales(endpoint: string, data: any) {
+    const token = getAuthToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) { headers['Authorization'] = `Bearer ${token}`; }
+    
+    const response = await fetch(`/api/${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to create sale');
+    return result;
+  },
+
+  async createBranchBillings(endpoint: string, data: any) {
+    const token = getAuthToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) { headers['Authorization'] = `Bearer ${token}`; }
+    
+    const response = await fetch(`/api/${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to create billing');
+    return result;
+  },
+
+  async updateBranchSales(endpoint: string, id: string | number, data: any) {
+    const token = getAuthToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) { headers['Authorization'] = `Bearer ${token}`; }
+    
+    const response = await fetch(`/api/${endpoint}/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to update sale');
+    return result;
+  },
+
+  async updateBranchBillings(endpoint: string, id: string | number, data: any) {
+    const token = getAuthToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) { headers['Authorization'] = `Bearer ${token}`; }
+    
+    const response = await fetch(`/api/${endpoint}/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to update billing');
+    return result;
+  },
+
+  async deleteBranchSales(endpoint: string, id: string | number) {
+    const token = getAuthToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) { headers['Authorization'] = `Bearer ${token}`; }
+    
+    const response = await fetch(`/api/${endpoint}/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (response.status === 204) return { success: true };
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to delete sale');
+    return result;
+  },
+
+  async deleteBranchBillings(endpoint: string, id: string | number) {
+    const token = getAuthToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) { headers['Authorization'] = `Bearer ${token}`; }
+    
+    const response = await fetch(`/api/${endpoint}/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (response.status === 204) return { success: true };
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to delete billing');
+    return result;
+  },
 };
 
 // Predictive Service API client

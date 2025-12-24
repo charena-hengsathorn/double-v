@@ -1,9 +1,9 @@
 {
   "kind": "collectionType",
-  "collectionName": "billings",
+  "collectionName": "construction_billings",
   "info": {
-    "singularName": "billing",
-    "pluralName": "billings",
+    "singularName": "construction-billing",
+    "pluralName": "construction-billings",
     "displayName": "Construction - Billings",
     "description": "Construction billing records and invoice information"
   },
@@ -54,18 +54,6 @@
     "payment_reference": {
       "type": "string",
       "required": false
-    },
-    "deal": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::pipeline-deal.pipeline-deal",
-      "inversedBy": "billings"
-    },
-    "milestone": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::deal-milestone.deal-milestone",
-      "inversedBy": "billings"
     }
   }
 }

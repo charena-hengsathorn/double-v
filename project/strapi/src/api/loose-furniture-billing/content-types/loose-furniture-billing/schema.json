@@ -1,11 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "billings",
+  "collectionName": "loose_furniture_billings",
   "info": {
-    "singularName": "billing",
-    "pluralName": "billings",
-    "displayName": "Construction - Billings",
-    "description": "Construction billing records and invoice information"
+    "singularName": "loose-furniture-billing",
+    "pluralName": "loose-furniture-billings",
+    "displayName": "Loose Furniture - Billings",
+    "description": "Loose furniture billing records and invoice information"
   },
   "options": {
     "draftAndPublish": false
@@ -54,18 +54,6 @@
     "payment_reference": {
       "type": "string",
       "required": false
-    },
-    "deal": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::pipeline-deal.pipeline-deal",
-      "inversedBy": "billings"
-    },
-    "milestone": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::deal-milestone.deal-milestone",
-      "inversedBy": "billings"
     }
   }
 }
