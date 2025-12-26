@@ -535,6 +535,7 @@ export interface ApiConstructionBillingConstructionBilling
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     collected_date: Schema.Attribute.Date;
+    construction_cost: Schema.Attribute.Decimal;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -549,6 +550,7 @@ export interface ApiConstructionBillingConstructionBilling
     > &
       Schema.Attribute.Private;
     payment_reference: Schema.Attribute.String;
+    project_profit: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
     recognition_month: Schema.Attribute.Date;
     status: Schema.Attribute.Enumeration<
@@ -799,6 +801,7 @@ export interface ApiLooseFurnitureBillingLooseFurnitureBilling
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     collected_date: Schema.Attribute.Date;
+    construction_cost: Schema.Attribute.Decimal;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -813,6 +816,7 @@ export interface ApiLooseFurnitureBillingLooseFurnitureBilling
     > &
       Schema.Attribute.Private;
     payment_reference: Schema.Attribute.String;
+    project_profit: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
     recognition_month: Schema.Attribute.Date;
     status: Schema.Attribute.Enumeration<

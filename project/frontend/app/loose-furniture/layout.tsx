@@ -10,3 +10,4 @@ export default function LooseFurnitureLayout({
   return <ProtectedRoute>{children}</ProtectedRoute>;
 }
 
+

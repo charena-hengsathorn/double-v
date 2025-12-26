@@ -53,3 +53,4 @@ contentTypes.forEach(type => {
 console.log('\n💡 If all files are ✅, routes should be auto-generated.');
 console.log('   If routes still don\'t work, check Strapi console for errors.');
 
+

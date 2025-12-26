@@ -54,3 +54,4 @@ echo "   2. Make sure all content types exist in Strapi"
 echo "   3. Check for errors in Strapi console"
 echo ""
 
+

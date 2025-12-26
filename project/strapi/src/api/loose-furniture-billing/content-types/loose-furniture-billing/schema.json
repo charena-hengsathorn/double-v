@@ -54,6 +54,14 @@
     "payment_reference": {
       "type": "string",
       "required": false
+    },
+    "construction_cost": {
+      "type": "decimal",
+      "required": false
+    },
+    "project_profit": {
+      "type": "decimal",
+      "required": false
     }
   }
 }

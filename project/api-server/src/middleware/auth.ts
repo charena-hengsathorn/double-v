@@ -36,3 +36,4 @@ export const validateTokenFormat = (token: string): boolean => {
   return parts.length === 3;
 };
 
+

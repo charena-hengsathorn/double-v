@@ -8,3 +8,4 @@ export default factories.createCoreController('api::forecast-snapshot.forecast-s
 
 
 
+

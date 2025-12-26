@@ -49,3 +49,4 @@ echo ""
 # Start Strapi
 npm run develop
 
+

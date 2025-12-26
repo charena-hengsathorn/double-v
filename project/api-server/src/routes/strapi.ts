@@ -55,3 +55,4 @@ router.use('/*', strapiProxy);
 
 export default router;
 
+

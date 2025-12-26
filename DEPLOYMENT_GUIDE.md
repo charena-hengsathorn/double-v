@@ -288,3 +288,4 @@ cd project/frontend && vercel --prod
 - `docs/deployment-guide.md` - Detailed deployment docs
 - `README.md` - Project overview
 
+

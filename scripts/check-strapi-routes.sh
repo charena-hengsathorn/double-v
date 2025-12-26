@@ -47,3 +47,4 @@ echo "   3. Check if content types are being loaded (should see 'Content Types l
 echo "   4. Try: cd project/strapi && rm -rf .cache build dist && npm run develop"
 echo ""
 
+

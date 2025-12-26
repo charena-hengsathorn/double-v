@@ -180,26 +180,38 @@ export default function ConstructionOverviewPage() {
       }
     });
 
-    // Process billings data to get recognition months
+    // Process billings data to get recognition months and construction costs/profits
     billingsData.forEach((billing: any) => {
       const attrs = billing.attributes || billing;
       const customer = attrs.customer;
       const amount = parseFloat(attrs.amount || 0);
+      const constructionCost = parseFloat(attrs.construction_cost || 0);
+      const projectProfit = parseFloat(attrs.project_profit || 0);
 
       if (customer && clientMap.has(customer)) {
         const clientData = clientMap.get(customer)!;
         
+        // Add construction cost and project profit from billings to client totals
+        clientData.costAmount += constructionCost;
+        clientData.profitAmount += projectProfit;
+        
         if (attrs.recognition_month) {
           const recDate = new Date(attrs.recognition_month);
           const month = recDate.getMonth();
-          if (attrs.status === 'paid') {
+          const year = recDate.getFullYear();
+          if (attrs.status === 'paid' && (year === 2025 || year === new Date().getFullYear())) {
             clientData.monthlySales[month] += amount;
+            clientData.monthlyCosts[month] += constructionCost;
+            clientData.monthlyProfits[month] += projectProfit;
           }
         } else if (attrs.collected_date) {
           const colDate = new Date(attrs.collected_date);
           const month = colDate.getMonth();
-          if (attrs.status === 'paid') {
+          const year = colDate.getFullYear();
+          if (attrs.status === 'paid' && (year === 2025 || year === new Date().getFullYear())) {
             clientData.monthlySales[month] += amount;
+            clientData.monthlyCosts[month] += constructionCost;
+            clientData.monthlyProfits[month] += projectProfit;
           }
         }
       }

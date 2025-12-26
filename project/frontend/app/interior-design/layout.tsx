@@ -10,3 +10,4 @@ export default function InteriorDesignLayout({
   return <ProtectedRoute>{children}</ProtectedRoute>;
 }
 
+

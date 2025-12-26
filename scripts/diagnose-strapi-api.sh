@@ -90,3 +90,4 @@ echo "   1. Check bootstrap script ran (look for '✅ Public permissions configu
 echo "   2. Verify permissions in admin panel"
 echo ""
 
+

@@ -102,3 +102,4 @@ echo "  - All services should use .env.local for local development"
 echo "  - .env.local files are git-ignored (safe for secrets)"
 echo "  - See ENV_SETUP_GUIDE.md for detailed documentation"
 
+

@@ -8,3 +8,4 @@ export default factories.createCoreController('api::pipeline-deal.pipeline-deal'
 
 
 
+

@@ -62,3 +62,4 @@ echo "  - Services now prioritize .env.local over .env"
 echo "  - You can safely delete old .env files if .env.local exists"
 echo "  - .env.local files are git-ignored"
 
+

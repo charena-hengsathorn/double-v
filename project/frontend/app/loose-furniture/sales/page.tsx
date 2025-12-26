@@ -80,7 +80,7 @@ export default function SalesTablePage() {
       setLoading(true);
       setError(null);
 
-      const salesData = await strapiApi.getLoosefurnitureSales().catch(() => ({ data: [] }));
+      const salesData = await strapiApi.getLooseFurnitureSales().catch(() => ({ data: [] }));
       setSales(salesData || { data: [] });
     } catch (err: any) {
       if (err.response?.status !== 404) {
@@ -193,9 +193,9 @@ export default function SalesTablePage() {
       }
 
       if (editingEntry && editingEntry.id) {
-        await strapiApi.updateLoosefurnitureSales(editingEntry.id, submitData);
+        await strapiApi.updateLooseFurnitureSales(editingEntry.id, submitData);
       } else {
-        await strapiApi.createLoosefurnitureSales(submitData);
+        await strapiApi.createLooseFurnitureSales(submitData);
       }
       
       handleCloseDrawer();

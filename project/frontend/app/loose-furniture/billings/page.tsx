@@ -58,9 +58,11 @@ interface BillingEntry {
   recognition_month?: string;
   status?: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   payment_reference?: string;
+  construction_cost?: string;
+  project_profit?: string;
 }
 
-export default function BillingsTablePage() {
+export default function LooseFurnitureBillingsPage() {
   // Calculate current month and year once
   const currentDate = new Date();
   const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -85,6 +87,8 @@ export default function BillingsTablePage() {
     recognition_month: `${currentYear}-${currentMonth}`,
     status: 'draft',
     payment_reference: '',
+    construction_cost: '',
+    project_profit: '',
   });
   // Separate state for month and year selectors - preset to current month/year
   const [recognitionMonth, setRecognitionMonth] = useState<string>(currentMonth);
@@ -120,7 +124,7 @@ export default function BillingsTablePage() {
       setLoading(true);
       setError(null);
 
-      const billingData = await strapiApi.getLoosefurnitureBillings().catch(() => ({ data: [] }));
+      const billingData = await strapiApi.getLooseFurnitureBillings().catch(() => ({ data: [] }));
       setBillings(billingData || { data: [] });
     } catch (err: any) {
       if (err.response?.status !== 404) {
@@ -134,7 +138,7 @@ export default function BillingsTablePage() {
 
   const loadSales = async () => {
     try {
-      const salesData = await strapiApi.getLoosefurnitureSales().catch(() => ({ data: [] }));
+      const salesData = await strapiApi.getLooseFurnitureSales().catch(() => ({ data: [] }));
       setSales(salesData || { data: [] });
     } catch (err: any) {
       console.error('Error loading sales data:', err);
@@ -193,6 +197,8 @@ export default function BillingsTablePage() {
         recognition_month: finalMonth && finalYear ? `${finalYear}-${finalMonth}` : '',
         status: attrs.status || 'draft',
         payment_reference: attrs.payment_reference || '',
+        construction_cost: attrs.construction_cost?.toString() || '',
+        project_profit: attrs.project_profit?.toString() || '',
       });
     } else {
       setEditingEntry(null);
@@ -214,6 +220,8 @@ export default function BillingsTablePage() {
         recognition_month: `${currentYear}-${currentMonth}`,
         status: 'draft',
         payment_reference: '',
+        construction_cost: '',
+        project_profit: '',
       });
     }
     setDrawerOpen(true);
@@ -273,6 +281,8 @@ export default function BillingsTablePage() {
         recognition_month: recognitionMonthValue, // YYYY-MM-01 format for date type
         status: formData.status || 'draft',
         payment_reference: formData.payment_reference?.trim() || undefined,
+        construction_cost: formData.construction_cost ? parseFloat(formData.construction_cost) : undefined,
+        project_profit: formData.project_profit ? parseFloat(formData.project_profit) : undefined,
       };
 
       // Handle both Strapi response formats (with/without attributes)
@@ -280,9 +290,9 @@ export default function BillingsTablePage() {
       const entryId = editingEntry?.documentId || editingEntry?.id || (editingEntry?.attributes?.documentId) || (editingEntry?.attributes?.id);
       
       if (editingEntry && entryId) {
-        await strapiApi.updateLoosefurnitureBillings(entryId, submitData);
+        await strapiApi.updateLooseFurnitureBillings(entryId, submitData);
       } else {
-        await strapiApi.createLoosefurnitureBillings(submitData);
+        await strapiApi.createLooseFurnitureBillings(submitData);
       }
       
       handleCloseDrawer();
@@ -334,7 +344,7 @@ export default function BillingsTablePage() {
       setError(null);
       
       console.log('[DELETE] Attempting to delete billing entry with ID:', entryId, 'Type:', typeof entryId);
-      await strapiApi.deleteLoosefurnitureBillings(entryId);
+      await strapiApi.deleteLooseFurnitureBillings(entryId);
       
       setSnackbar({
         open: true,
@@ -467,9 +477,13 @@ export default function BillingsTablePage() {
   const totals = filteredBillings.reduce((acc: any, billing: any) => {
     const attrs = billing.attributes || billing;
     const amount = parseFloat(attrs.amount || 0);
+    const constructionCost = parseFloat(attrs.construction_cost || 0);
+    const projectProfit = parseFloat(attrs.project_profit || 0);
     acc.total += amount;
+    acc.constructionCost += constructionCost;
+    acc.projectProfit += projectProfit;
     return acc;
-  }, { total: 0 });
+  }, { total: 0, constructionCost: 0, projectProfit: 0 });
 
   // Generate list of available months from billings data
   const getAvailableMonths = () => {
@@ -502,10 +516,10 @@ export default function BillingsTablePage() {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 300, mb: 1, letterSpacing: '-0.02em' }}>
-              Cashflow Table
+              Loose Furniture - Billings
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-              Billing table for cashflow tracking
+              Loose Furniture billing table
             </Typography>
           </Box>
         </Box>
@@ -519,18 +533,18 @@ export default function BillingsTablePage() {
           <Button
             variant="outlined"
             component={Link}
-            href="/cashflow/sales"
+            href="/loose-furniture/sales"
             sx={{ textTransform: 'none', borderRadius: 2 }}
           >
-            Sales Table
+            Loose Furniture - Sales
           </Button>
           <Button
             variant="contained"
             component={Link}
-            href="/cashflow/billings"
+            href="/loose-furniture/billings"
             sx={{ textTransform: 'none', borderRadius: 2 }}
           >
-            Billing Table
+            Loose Furniture - Billings
           </Button>
         </Box>
         <Button
@@ -643,7 +657,7 @@ export default function BillingsTablePage() {
         <Card>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 400 }}>
-                Billing Table
+                Loose Furniture - Billings
               </Typography>
               {billingsList.length > 0 ? (
               <>
@@ -656,6 +670,8 @@ export default function BillingsTablePage() {
                         <TableCell sx={{ fontWeight: 500 }}>Invoice Number</TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Invoice Date</TableCell>
                         <TableCell sx={{ fontWeight: 500 }} align="right">Amount</TableCell>
+                        <TableCell sx={{ fontWeight: 500 }} align="right">Loose Furniture Cost</TableCell>
+                        <TableCell sx={{ fontWeight: 500 }} align="right">Project Profit</TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Currency</TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Collected Date</TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Recognition Month</TableCell>
@@ -701,6 +717,12 @@ export default function BillingsTablePage() {
                               <TableCell align="right" sx={{ fontWeight: 500 }}>
                                 {formatCurrency(amount)}
                               </TableCell>
+                              <TableCell align="right" sx={{ fontWeight: 500 }}>
+                                {formatCurrency(parseFloat(attrs.construction_cost || 0))}
+                              </TableCell>
+                              <TableCell align="right" sx={{ fontWeight: 500 }}>
+                                {formatCurrency(parseFloat(attrs.project_profit || 0))}
+                              </TableCell>
                               <TableCell>
                                 {attrs.currency || 'USD'}
                               </TableCell>
@@ -740,7 +762,7 @@ export default function BillingsTablePage() {
                         })
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={11} align="center" sx={{ py: 4 }}><Typography variant="body2" color="text.secondary">No billings match the selected filters</Typography></TableCell>
+                          <TableCell colSpan={13} align="center" sx={{ py: 4 }}><Typography variant="body2" color="text.secondary">No billings match the selected filters</Typography></TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -759,6 +781,9 @@ export default function BillingsTablePage() {
                           <TableCell>-</TableCell>
                           <TableCell>-</TableCell>
                           <TableCell align="right" sx={{ fontWeight: 700 }}>{formatCurrency(totals.total)}</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700 }}>{formatCurrency(totals.constructionCost)}</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700 }}>{formatCurrency(totals.projectProfit)}</TableCell>
+                          <TableCell>-</TableCell>
                           <TableCell>-</TableCell>
                           <TableCell>-</TableCell>
                           <TableCell>-</TableCell>
@@ -914,6 +939,34 @@ export default function BillingsTablePage() {
                 required
                 error={!!formErrors.amount}
                 helperText={formErrors.amount}
+                inputProps={{ min: 0, step: 0.01 }}
+              />
+
+              <TextField
+                label="Loose Furniture Cost"
+                type="number"
+                value={formData.construction_cost}
+                onChange={(e) => setFormData({ ...formData, construction_cost: e.target.value })}
+                fullWidth
+                variant="outlined"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                helperText="Loose Furniture cost for this billing entry"
+                inputProps={{ min: 0, step: 0.01 }}
+              />
+
+              <TextField
+                label="Project Profit"
+                type="number"
+                value={formData.project_profit}
+                onChange={(e) => setFormData({ ...formData, project_profit: e.target.value })}
+                fullWidth
+                variant="outlined"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
+                helperText="Project profit for this billing entry"
                 inputProps={{ min: 0, step: 0.01 }}
               />
 
