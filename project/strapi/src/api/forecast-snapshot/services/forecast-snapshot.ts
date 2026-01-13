@@ -9,3 +9,4 @@ export default factories.createCoreService('api::forecast-snapshot.forecast-snap
 
 
 
+

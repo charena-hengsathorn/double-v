@@ -72,3 +72,4 @@ echo ""
 echo -e "${YELLOW}⚠️  Remember: .env.local files are git-ignored and contain sensitive data${NC}"
 
 
+

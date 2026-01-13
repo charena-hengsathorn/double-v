@@ -139,6 +139,8 @@ export default function LooseFurnitureOverviewPage() {
           saleAmount: 0,
           costAmount: 0,
           profitAmount: 0,
+          salesCostAmount: 0, // Cost from sales table only
+          salesProfitAmount: 0, // Profit from sales table only
           projectCount: 0,
           monthlySales: new Array(12).fill(0),
           monthlyCosts: new Array(12).fill(0),
@@ -159,28 +161,15 @@ export default function LooseFurnitureOverviewPage() {
       clientData.saleAmount += saleAmount;
       clientData.costAmount += costAmount;
       clientData.profitAmount += profitAmount;
+      // Track sales-only costs and profits for display in Sale column
+      clientData.salesCostAmount += costAmount;
+      clientData.salesProfitAmount += profitAmount;
       clientData.projectCount += 1;
 
-      const saleDateValue = attrs.sale_date || sale.sale_date || attrs.createdAt || sale.createdAt;
-      if (saleDateValue) {
-        try {
-          const saleDate = new Date(saleDateValue);
-          if (!isNaN(saleDate.getTime())) {
-            const month = saleDate.getMonth();
-            const year = saleDate.getFullYear();
-            if (year === 2025 || year === new Date().getFullYear()) {
-              clientData.monthlySales[month] += saleAmount;
-              clientData.monthlyCosts[month] += costAmount;
-              clientData.monthlyProfits[month] += profitAmount;
-            }
-          }
-        } catch (e) {
-          console.error('Error parsing sale_date:', saleDateValue, e);
-        }
-      }
+      // Sales entries should NOT be added to monthly columns - only show in Sale column
     });
 
-    // Process billings data to get recognition months and construction costs/profits
+    // Process billings data - billings should only appear in month columns based on recognition_month
     billingsData.forEach((billing: any) => {
       const attrs = billing.attributes || billing;
       const customer = attrs.customer;
@@ -192,26 +181,35 @@ export default function LooseFurnitureOverviewPage() {
         const clientData = clientMap.get(customer)!;
         
         // Add construction cost and project profit from billings to client totals
+        // Note: These are NOT added to salesCostAmount or salesProfitAmount
+        // because those should only show data from sales table
         clientData.costAmount += constructionCost;
         clientData.profitAmount += projectProfit;
         
+        // Billings should only appear in month columns based on recognition_month
         if (attrs.recognition_month) {
           const recDate = new Date(attrs.recognition_month);
           const month = recDate.getMonth();
           const year = recDate.getFullYear();
-          if (attrs.status === 'paid' && (year === 2025 || year === new Date().getFullYear())) {
-            clientData.monthlySales[month] += amount;
-            clientData.monthlyCosts[month] += constructionCost;
-            clientData.monthlyProfits[month] += projectProfit;
+          if (year === 2025 || year === new Date().getFullYear()) {
+            // Only add to monthly columns if status is paid
+            if (attrs.status === 'paid') {
+              clientData.monthlySales[month] += amount;
+              clientData.monthlyCosts[month] += constructionCost;
+              clientData.monthlyProfits[month] += projectProfit;
+            }
           }
         } else if (attrs.collected_date) {
           const colDate = new Date(attrs.collected_date);
           const month = colDate.getMonth();
           const year = colDate.getFullYear();
-          if (attrs.status === 'paid' && (year === 2025 || year === new Date().getFullYear())) {
-            clientData.monthlySales[month] += amount;
-            clientData.monthlyCosts[month] += constructionCost;
-            clientData.monthlyProfits[month] += projectProfit;
+          if (year === 2025 || year === new Date().getFullYear()) {
+            // Only add to monthly columns if status is paid
+            if (attrs.status === 'paid') {
+              clientData.monthlySales[month] += amount;
+              clientData.monthlyCosts[month] += constructionCost;
+              clientData.monthlyProfits[month] += projectProfit;
+            }
           }
         }
       }
@@ -227,6 +225,8 @@ export default function LooseFurnitureOverviewPage() {
     saleAmount: clientDataArray.reduce((sum, c) => sum + c.saleAmount, 0),
     costAmount: clientDataArray.reduce((sum, c) => sum + c.costAmount, 0),
     profitAmount: clientDataArray.reduce((sum, c) => sum + c.profitAmount, 0),
+    salesCostAmount: clientDataArray.reduce((sum, c) => sum + c.salesCostAmount, 0),
+    salesProfitAmount: clientDataArray.reduce((sum, c) => sum + c.salesProfitAmount, 0),
     projectCount: clientDataArray.reduce((sum, c) => sum + c.projectCount, 0),
     monthlySales: new Array(12).fill(0),
     monthlyCosts: new Array(12).fill(0),
@@ -454,7 +454,7 @@ export default function LooseFurnitureOverviewPage() {
                           <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                         ))}
                         <TableCell align="right"></TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 500 }}>{formatNumber(client.costAmount)}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 500 }}>{formatNumber(client.salesCostAmount)}</TableCell>
                       </TableRow>
                       
                       {/* Project Profit Row */}
@@ -467,7 +467,7 @@ export default function LooseFurnitureOverviewPage() {
                           <TableCell key={idx} align="right" sx={{ fontWeight: 700 }}>{formatNumber(amount)}</TableCell>
                         ))}
                         <TableCell align="right"></TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 700 }}>{formatNumber(client.profitAmount)}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 700 }}>{formatNumber(client.salesProfitAmount)}</TableCell>
                       </TableRow>
                     </>
                   ))}
@@ -495,7 +495,7 @@ export default function LooseFurnitureOverviewPage() {
                       <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                     ))}
                     <TableCell align="right"></TableCell>
-                    <TableCell align="right">{formatNumber(grandTotals.costAmount)}</TableCell>
+                    <TableCell align="right">{formatNumber(grandTotals.salesCostAmount)}</TableCell>
                   </TableRow>
                   
                   {/* Grand Total Profit Row */}
@@ -508,7 +508,7 @@ export default function LooseFurnitureOverviewPage() {
                       <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                     ))}
                     <TableCell align="right"></TableCell>
-                    <TableCell align="right">{formatNumber(grandTotals.profitAmount)}</TableCell>
+                    <TableCell align="right">{formatNumber(grandTotals.salesProfitAmount)}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>

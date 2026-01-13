@@ -3,7 +3,8 @@
 # Double V Demo - Start All Services and Open Browser
 # Run this from the project root: ./start-demo.sh
 
-set -e
+# Don't exit on error immediately - we want to handle cleanup gracefully
+set +e
 
 # Colors
 GREEN='\033[0;32m'
@@ -40,8 +41,15 @@ echo ""
 
 # Kill any existing processes
 echo "🧹 Cleaning up existing processes..."
+# Kill processes on specific ports first
+lsof -ti:1337 | xargs kill -9 2>/dev/null || true
+lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+lsof -ti:4000 | xargs kill -9 2>/dev/null || true
+# Also kill by process name
 pkill -f "strapi develop" 2>/dev/null || true
-pkill -f "uvicorn app.main:app" 2>/dev/null || true
+pkill -f "uvicorn.*app.main:app" 2>/dev/null || true
+pkill -f "uvicorn.*main:app" 2>/dev/null || true
 pkill -f "next dev" 2>/dev/null || true
 pkill -f "tsx watch.*api-server" 2>/dev/null || true
 pkill -f "node.*api-server" 2>/dev/null || true
@@ -51,8 +59,16 @@ sleep 2
 cleanup() {
     echo ""
     echo -e "${YELLOW}🛑 Stopping services...${NC}"
-    kill $STRAPI_PID $PREDICTIVE_PID $FRONTEND_PID ${API_SERVER_PID:-0} 2>/dev/null || true
-    wait $STRAPI_PID $PREDICTIVE_PID $FRONTEND_PID ${API_SERVER_PID:-0} 2>/dev/null || true
+    [ ! -z "$STRAPI_PID" ] && kill $STRAPI_PID 2>/dev/null || true
+    [ ! -z "$PREDICTIVE_PID" ] && kill $PREDICTIVE_PID 2>/dev/null || true
+    [ ! -z "$FRONTEND_PID" ] && kill $FRONTEND_PID 2>/dev/null || true
+    [ ! -z "$API_SERVER_PID" ] && kill $API_SERVER_PID 2>/dev/null || true
+    # Also kill by port
+    lsof -ti:1337 | xargs kill -9 2>/dev/null || true
+    lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+    lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+    lsof -ti:4000 | xargs kill -9 2>/dev/null || true
+    sleep 1
     echo -e "${GREEN}✅ Services stopped${NC}"
     exit 0
 }
@@ -82,6 +98,12 @@ fi
 npm run develop > /tmp/strapi.log 2>&1 &
 STRAPI_PID=$!
 echo "   PID: $STRAPI_PID | Log: /tmp/strapi.log"
+# Verify process started
+if ! kill -0 $STRAPI_PID 2>/dev/null; then
+    echo -e "${RED}   ❌ Failed to start Strapi${NC}"
+    echo "   Check logs: tail -50 /tmp/strapi.log"
+    exit 1
+fi
 cd ../..
 sleep 5
 
@@ -110,6 +132,12 @@ fi
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > /tmp/predictive.log 2>&1 &
 PREDICTIVE_PID=$!
 echo "   PID: $PREDICTIVE_PID | Log: /tmp/predictive.log"
+# Verify process started
+if ! kill -0 $PREDICTIVE_PID 2>/dev/null; then
+    echo -e "${RED}   ❌ Failed to start Predictive Service${NC}"
+    echo "   Check logs: tail -50 /tmp/predictive.log"
+    exit 1
+fi
 cd ../..
 sleep 3
 
@@ -132,6 +160,12 @@ if [ -f "project/api-server/package.json" ]; then
     npm run dev > /tmp/api-server.log 2>&1 &
     API_SERVER_PID=$!
     echo "   PID: $API_SERVER_PID | Log: /tmp/api-server.log"
+    # Verify process started
+    if ! kill -0 $API_SERVER_PID 2>/dev/null; then
+        echo -e "${RED}   ❌ Failed to start API Server${NC}"
+        echo "   Check logs: tail -50 /tmp/api-server.log"
+        exit 1
+    fi
     cd ../..
     sleep 2
 fi
@@ -160,6 +194,12 @@ fi
 npm run dev > /tmp/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "   PID: $FRONTEND_PID | Log: /tmp/frontend.log"
+# Verify process started
+if ! kill -0 $FRONTEND_PID 2>/dev/null; then
+    echo -e "${RED}   ❌ Failed to start Frontend${NC}"
+    echo "   Check logs: tail -50 /tmp/frontend.log"
+    exit 1
+fi
 cd ../..
 
 echo ""
@@ -217,7 +257,9 @@ wait_for_service() {
     done
     
     echo -e "${RED}   ❌ $name failed to start after ${max_attempts} seconds${NC}"
-    echo -e "${YELLOW}   Check logs: tail -50 /tmp/${name,,}.log | tr ' ' '_'${NC}"
+    # Generate log filename (convert name to lowercase and replace spaces with dashes)
+    local log_name=$(echo "$name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+    echo -e "${YELLOW}   Check logs: tail -50 /tmp/${log_name}.log${NC}"
     return 1
 }
 
@@ -318,5 +360,25 @@ else
 fi
 echo ""
 
-# Keep script running
-wait
+# Keep script running - wait for any background process
+# Check if processes are still running periodically
+while true; do
+    sleep 5
+    # Check if any critical process died
+    if [ ! -z "$STRAPI_PID" ] && ! kill -0 $STRAPI_PID 2>/dev/null; then
+        echo -e "${RED}⚠️  Strapi process died unexpectedly${NC}"
+        echo "   Check logs: tail -50 /tmp/strapi.log"
+    fi
+    if [ ! -z "$PREDICTIVE_PID" ] && ! kill -0 $PREDICTIVE_PID 2>/dev/null; then
+        echo -e "${RED}⚠️  Predictive Service process died unexpectedly${NC}"
+        echo "   Check logs: tail -50 /tmp/predictive.log"
+    fi
+    if [ ! -z "$FRONTEND_PID" ] && ! kill -0 $FRONTEND_PID 2>/dev/null; then
+        echo -e "${RED}⚠️  Frontend process died unexpectedly${NC}"
+        echo "   Check logs: tail -50 /tmp/frontend.log"
+    fi
+    if [ ! -z "$API_SERVER_PID" ] && ! kill -0 $API_SERVER_PID 2>/dev/null; then
+        echo -e "${RED}⚠️  API Server process died unexpectedly${NC}"
+        echo "   Check logs: tail -50 /tmp/api-server.log"
+    fi
+done
