@@ -194,7 +194,7 @@ export default function SalesTablePage() {
 
       // Handle both Strapi response formats (with/without attributes)
       // For UPDATE, prefer documentId (Strapi v4 standard)
-      const entryId = editingEntry?.documentId || editingEntry?.id || (editingEntry?.attributes?.documentId) || (editingEntry?.attributes?.id);
+      const entryId = (editingEntry as any)?.documentId || editingEntry?.id || ((editingEntry as any)?.attributes?.documentId) || ((editingEntry as any)?.attributes?.id);
       
       if (editingEntry && entryId) {
         await strapiApi.updateSales(entryId, submitData);

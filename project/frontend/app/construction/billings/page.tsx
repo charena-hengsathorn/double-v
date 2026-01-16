@@ -291,8 +291,8 @@ export default function ConstructionBillingsPage() {
         payment_reference: formData.payment_reference?.trim() || undefined,
         construction_cost: formData.construction_cost ? parseFloat(formData.construction_cost) : undefined,
         project_profit: (() => {
-          const amount = parseFloat(formData.amount) || 0;
-          const cost = parseFloat(formData.construction_cost) || 0;
+          const amount = parseFloat(formData.amount || '0') || 0;
+          const cost = parseFloat(formData.construction_cost || '0') || 0;
           const calculatedProfit = amount - cost;
           return calculatedProfit > 0 ? calculatedProfit : undefined;
         })(),
@@ -947,7 +947,7 @@ export default function ConstructionBillingsPage() {
                 value={formData.amount}
                 onChange={(e) => {
                   const amount = e.target.value;
-                  const cost = parseFloat(formData.construction_cost) || 0;
+                  const cost = parseFloat(formData.construction_cost || '0') || 0;
                   const calculatedProfit = (parseFloat(amount) || 0) - cost;
                   setFormData({ 
                     ...formData, 
@@ -996,8 +996,8 @@ export default function ConstructionBillingsPage() {
                 label="Project Profit"
                 type="number"
                 value={(() => {
-                  const amount = parseFloat(formData.amount) || 0;
-                  const cost = parseFloat(formData.construction_cost) || 0;
+                  const amount = parseFloat(formData.amount || '0') || 0;
+                  const cost = parseFloat(formData.construction_cost || '0') || 0;
                   const calculatedProfit = amount - cost;
                   return calculatedProfit > 0 ? calculatedProfit.toFixed(2) : '0';
                 })()}
