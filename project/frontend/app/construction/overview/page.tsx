@@ -436,38 +436,50 @@ export default function ConstructionOverviewPage() {
                           })()}
                         </TableCell>
                         <TableCell>{client.projectCount}</TableCell>
-                        <TableCell sx={{ fontWeight: 500 }}>{formatNumber(client.saleAmount)}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 500 }}>{formatNumber(client.saleAmount)}</TableCell>
                         {client.monthlySales.map((amount: number, idx: number) => (
                           <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                         ))}
-                        <TableCell align="right"></TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 500 }}>{formatNumber(client.saleAmount)}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 500 }}>
+                          {formatNumber(client.monthlySales.reduce((sum: number, val: number) => sum + val, 0))}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 500 }}>
+                          {formatNumber(client.monthlySales.reduce((sum: number, val: number) => sum + val, 0))}
+                        </TableCell>
                       </TableRow>
                       
                       {/* Construction Cost Row */}
                       <TableRow key={`${client.client}-cost`} sx={{ bgcolor: clientIdx % 2 === 0 ? 'grey.50' : 'white' }}>
                         <TableCell></TableCell>
                         <TableCell></TableCell>
-                        <TableCell></TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Construction Cost</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 500 }}>{formatNumber(client.salesCostAmount)}</TableCell>
                         {client.monthlyCosts.map((amount: number, idx: number) => (
                           <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                         ))}
-                        <TableCell align="right"></TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 500 }}>{formatNumber(client.salesCostAmount)}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 500 }}>
+                          {formatNumber(client.monthlyCosts.reduce((sum: number, val: number) => sum + val, 0))}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 500 }}>
+                          {formatNumber(client.monthlyCosts.reduce((sum: number, val: number) => sum + val, 0))}
+                        </TableCell>
                       </TableRow>
                       
                       {/* Project Profit Row */}
                       <TableRow key={`${client.client}-profit`} sx={{ bgcolor: clientIdx % 2 === 0 ? 'grey.50' : 'white' }}>
                         <TableCell></TableCell>
                         <TableCell></TableCell>
-                        <TableCell></TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Project Profit</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 700 }}>{formatNumber(client.salesProfitAmount)}</TableCell>
                         {client.monthlyProfits.map((amount: number, idx: number) => (
                           <TableCell key={idx} align="right" sx={{ fontWeight: 700 }}>{formatNumber(amount)}</TableCell>
                         ))}
-                        <TableCell align="right"></TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 700 }}>{formatNumber(client.salesProfitAmount)}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 700 }}>
+                          {formatNumber(client.monthlyProfits.reduce((sum: number, val: number) => sum + val, 0))}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 700 }}>
+                          {formatNumber(client.monthlyProfits.reduce((sum: number, val: number) => sum + val, 0))}
+                        </TableCell>
                       </TableRow>
                     </>
                   ))}
@@ -477,38 +489,50 @@ export default function ConstructionOverviewPage() {
                     <TableCell>Total</TableCell>
                     <TableCell></TableCell>
                     <TableCell>{grandTotals.projectCount}</TableCell>
-                    <TableCell>{formatNumber(grandTotals.saleAmount)}</TableCell>
+                    <TableCell align="right">{formatNumber(grandTotals.saleAmount)}</TableCell>
                     {grandTotals.monthlySales.map((amount: number, idx: number) => (
                       <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                     ))}
-                    <TableCell align="right"></TableCell>
-                    <TableCell align="right">{formatNumber(grandTotals.saleAmount)}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {formatNumber(grandTotals.monthlySales.reduce((sum: number, val: number) => sum + val, 0))}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {formatNumber(grandTotals.monthlySales.reduce((sum: number, val: number) => sum + val, 0))}
+                    </TableCell>
                   </TableRow>
                   
                   {/* Grand Total Cost Row */}
                   <TableRow sx={{ bgcolor: 'grey.200', '& .MuiTableCell-root': { fontWeight: 600 } }}>
                     <TableCell></TableCell>
                     <TableCell></TableCell>
-                    <TableCell></TableCell>
                     <TableCell>Construction Cost</TableCell>
+                    <TableCell align="right">{formatNumber(grandTotals.salesCostAmount)}</TableCell>
                     {grandTotals.monthlyCosts.map((amount: number, idx: number) => (
                       <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                     ))}
-                    <TableCell align="right"></TableCell>
-                    <TableCell align="right">{formatNumber(grandTotals.salesCostAmount)}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {formatNumber(grandTotals.monthlyCosts.reduce((sum: number, val: number) => sum + val, 0))}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {formatNumber(grandTotals.monthlyCosts.reduce((sum: number, val: number) => sum + val, 0))}
+                    </TableCell>
                   </TableRow>
                   
                   {/* Grand Total Profit Row */}
                   <TableRow sx={{ bgcolor: 'grey.300', '& .MuiTableCell-root': { fontWeight: 700, fontSize: '1rem' } }}>
                     <TableCell></TableCell>
                     <TableCell></TableCell>
-                    <TableCell></TableCell>
                     <TableCell>Project Profit</TableCell>
+                    <TableCell align="right">{formatNumber(grandTotals.salesProfitAmount)}</TableCell>
                     {grandTotals.monthlyProfits.map((amount: number, idx: number) => (
                       <TableCell key={idx} align="right">{formatNumber(amount)}</TableCell>
                     ))}
-                    <TableCell align="right"></TableCell>
-                    <TableCell align="right">{formatNumber(grandTotals.salesProfitAmount)}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>
+                      {formatNumber(grandTotals.monthlyProfits.reduce((sum: number, val: number) => sum + val, 0))}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>
+                      {formatNumber(grandTotals.monthlyProfits.reduce((sum: number, val: number) => sum + val, 0))}
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
