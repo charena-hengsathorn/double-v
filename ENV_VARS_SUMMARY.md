@@ -21,16 +21,22 @@ heroku config --app double-v-strapi
 
 ## ✅ Heroku - Predictive Service (`double-v-predictive`)
 
-**Status:** Already configured
+**Status:** Already configured (STRAPI_API_TOKEN may need to be set)
 
 **Key Variables:**
-- `STRAPI_URL`: https://double-v-strapi-dd98523889e0.herokuapp.com/api
-- `CORS_ORIGINS`: https://double-v-frontend.vercel.app,http://localhost:3000
-- `ENVIRONMENT`: production
-- `LOG_LEVEL`: INFO
-- `MODEL_VERSION`: 1.0.0
-- `MONTE_CARLO_ITERATIONS`: 10000
-- `FORECAST_HORIZON_MONTHS`: 12
+- `STRAPI_URL`: https://double-v-strapi-dd98523889e0.herokuapp.com/api ✅
+- `STRAPI_API_TOKEN`: (Required - generate in Strapi admin) ⚠️
+- `STRAPI_WEBHOOK_SECRET`: (Optional - for webhook verification)
+- `CORS_ORIGINS`: https://double-v-frontend.vercel.app,http://localhost:3000 ✅
+- `ENVIRONMENT`: production ✅
+- `LOG_LEVEL`: INFO ✅
+- `MODEL_VERSION`: 1.0.0 ✅
+- `MONTE_CARLO_ITERATIONS`: 10000 ✅
+- `FORECAST_HORIZON_MONTHS`: 12 ✅
+
+**⚠️ Action Required:**
+1. Generate API token in Strapi admin (Settings → API Tokens)
+2. Set in Heroku: `heroku config:set STRAPI_API_TOKEN=your-token-here --app double-v-predictive`
 
 **View all:**
 ```bash

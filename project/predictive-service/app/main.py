@@ -289,6 +289,44 @@ async def sync_from_strapi(request: StrapiSyncRequest):
             elif entity_type == "billings":
                 billings = await strapi_client.get_billings()
                 entities_synced["billings"] = len(billings)
+            elif entity_type == "clients":
+                clients = await strapi_client.get_clients()
+                entities_synced["clients"] = len(clients)
+            elif entity_type == "construction-sales":
+                sales = await strapi_client.get_construction_sales()
+                entities_synced["construction-sales"] = len(sales)
+            elif entity_type == "construction-billings":
+                billings = await strapi_client.get_construction_billings()
+                entities_synced["construction-billings"] = len(billings)
+            elif entity_type == "loose-furniture-sales":
+                sales = await strapi_client.get_loose_furniture_sales()
+                entities_synced["loose-furniture-sales"] = len(sales)
+            elif entity_type == "loose-furniture-billings":
+                billings = await strapi_client.get_loose_furniture_billings()
+                entities_synced["loose-furniture-billings"] = len(billings)
+            elif entity_type == "interior-design-sales":
+                sales = await strapi_client.get_interior_design_sales()
+                entities_synced["interior-design-sales"] = len(sales)
+            elif entity_type == "interior-design-billings":
+                billings = await strapi_client.get_interior_design_billings()
+                entities_synced["interior-design-billings"] = len(billings)
+            elif entity_type == "all-sales":
+                all_sales = await strapi_client.get_all_sales()
+                entities_synced["all-sales"] = {
+                    "construction": len(all_sales.get("construction", [])),
+                    "loose_furniture": len(all_sales.get("loose_furniture", [])),
+                    "interior_design": len(all_sales.get("interior_design", [])),
+                    "total": len(all_sales.get("total", []))
+                }
+            elif entity_type == "all-billings":
+                all_billings = await strapi_client.get_all_billings()
+                entities_synced["all-billings"] = {
+                    "general": len(all_billings.get("general", [])),
+                    "construction": len(all_billings.get("construction", [])),
+                    "loose_furniture": len(all_billings.get("loose_furniture", [])),
+                    "interior_design": len(all_billings.get("interior_design", [])),
+                    "total": len(all_billings.get("total", []))
+                }
         
         sync_duration_ms = int((time.time() - start_time) * 1000)
         
@@ -397,6 +435,116 @@ async def detailed_health():
         },
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+@app.get("/api/v1/data/clients")
+async def get_clients(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get clients from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            # Simple filter parsing - in production, use proper query parsing
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        clients = await strapi_client.get_clients(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": clients, "count": len(clients)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching clients: {str(e)}")
+
+
+@app.get("/api/v1/data/sales/all")
+async def get_all_sales(
+    filters: Optional[str] = None
+):
+    """Get all sales data from all branches"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        all_sales = await strapi_client.get_all_sales(filters=filter_dict if filter_dict else None)
+        return {
+            "data": all_sales,
+            "summary": {
+                "construction_count": len(all_sales.get("construction", [])),
+                "loose_furniture_count": len(all_sales.get("loose_furniture", [])),
+                "interior_design_count": len(all_sales.get("interior_design", [])),
+                "total_count": len(all_sales.get("total", []))
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching all sales: {str(e)}")
+
+
+@app.get("/api/v1/data/billings/all")
+async def get_all_billings(
+    filters: Optional[str] = None
+):
+    """Get all billings data from all branches"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        all_billings = await strapi_client.get_all_billings(filters=filter_dict if filter_dict else None)
+        return {
+            "data": all_billings,
+            "summary": {
+                "general_count": len(all_billings.get("general", [])),
+                "construction_count": len(all_billings.get("construction", [])),
+                "loose_furniture_count": len(all_billings.get("loose_furniture", [])),
+                "interior_design_count": len(all_billings.get("interior_design", [])),
+                "total_count": len(all_billings.get("total", []))
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching all billings: {str(e)}")
+
+
+@app.get("/api/v1/data/sales/construction")
+async def get_construction_sales(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get construction sales from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        sales = await strapi_client.get_construction_sales(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": sales, "count": len(sales)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching construction sales: {str(e)}")
+
+
+@app.get("/api/v1/data/billings/construction")
+async def get_construction_billings(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get construction billings from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        billings = await strapi_client.get_construction_billings(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": billings, "count": len(billings)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching construction billings: {str(e)}")
 
 
 if __name__ == "__main__":

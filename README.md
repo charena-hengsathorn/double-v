@@ -116,10 +116,10 @@ See `.env.example` files in each service directory for required environment vari
 - `TRANSFER_TOKEN_SALT`
 
 ### Predictive Service Required Variables
-- `STRAPI_URL`
-- `STRAPI_API_TOKEN`
-- `STRAPI_WEBHOOK_SECRET`
-- `CORS_ORIGINS`
+- `STRAPI_URL` - Strapi API URL (e.g., `https://double-v-strapi-dd98523889e0.herokuapp.com/api`)
+- `STRAPI_API_TOKEN` - API token for service-to-service authentication (generate in Strapi admin)
+- `STRAPI_WEBHOOK_SECRET` - Secret for webhook verification (optional)
+- `CORS_ORIGINS` - Comma-separated list of allowed origins
 
 ### Frontend Required Variables
 - `NEXT_PUBLIC_STRAPI_URL`
@@ -128,12 +128,23 @@ See `.env.example` files in each service directory for required environment vari
 
 ## Documentation
 
-- [Project Plan](./docs/project-plan.md)
-- [Technical Scope](./docs/tech-scope.md)
-- [API Specification](./docs/api-specification.md)
-- [Technical Specifications](./docs/technical-specifications.md)
-- [AI Execution Plan](./docs/ai-execution-plan.md)
-- [Deployment Checklist](./docs/deployment-checklist.md)
+### Core Documentation
+- [Project Plan](./docs/project-plan.md) - Project phases and execution plan
+- [Technical Scope](./docs/tech-scope.md) - Technical architecture and stack
+- [API Specification](./docs/api-specification.md) - Complete API reference
+- [Technical Specifications](./docs/technical-specifications.md) - Detailed technical specs
+- [Developer Guide](./docs/developer-guide.md) - Setup and development workflow
+
+### Integration & Deployment
+- [Strapi to Predictive Service Connection](./STRAPI_PREDICTIVE_CONNECTION.md) - How the services connect
+- [Deployment Links](./DEPLOYMENT_LINKS.md) - All deployment URLs and commands
+- [Environment Variables](./ENV_VARS_SUMMARY.md) - Environment variable reference
+
+### Additional Resources
+- [User Guide](./docs/user-guide.md) - End-user documentation
+- [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
+- [Strapi Setup Guide](./docs/strapi-setup-guide.md) - Strapi configuration
+- [Strapi Webhook Setup](./docs/strapi-webhook-setup.md) - Webhook configuration
 
 ## Development Workflow
 

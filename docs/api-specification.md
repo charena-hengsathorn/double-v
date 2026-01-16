@@ -762,7 +762,19 @@ POST /api/v1/models/ingest/strapi-sync
 **Request Body:**
 ```json
 {
-  "entity_types": ["pipeline-deals", "billings"],
+  "entity_types": [
+    "pipeline-deals",
+    "billings",
+    "clients",
+    "construction-sales",
+    "construction-billings",
+    "loose-furniture-sales",
+    "loose-furniture-billings",
+    "interior-design-sales",
+    "interior-design-billings",
+    "all-sales",
+    "all-billings"
+  ],
   "since": "2024-01-01T00:00:00.000Z",
   "full_sync": false
 }
@@ -779,6 +791,151 @@ POST /api/v1/models/ingest/strapi-sync
   "sync_duration_ms": 2000
 }
 ```
+
+---
+
+### Data Endpoints
+
+#### Get Clients
+```
+GET /api/v1/data/clients
+```
+
+**Query Parameters:**
+- `filters` (string, optional): JSON string of filter criteria
+- `populate` (string, optional): Relations to populate
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "attributes": {
+        "name": "Client Name",
+        "segment": "enterprise",
+        "region": "APAC"
+      }
+    }
+  ],
+  "count": 1
+}
+```
+
+#### Get All Sales
+```
+GET /api/v1/data/sales/all
+```
+
+**Query Parameters:**
+- `filters` (string, optional): JSON string of filter criteria
+
+**Response:**
+```json
+{
+  "data": {
+    "construction": [...],
+    "loose_furniture": [...],
+    "interior_design": [...],
+    "total": [...]
+  },
+  "summary": {
+    "construction_count": 10,
+    "loose_furniture_count": 5,
+    "interior_design_count": 8,
+    "total_count": 23
+  }
+}
+```
+
+#### Get All Billings
+```
+GET /api/v1/data/billings/all
+```
+
+**Query Parameters:**
+- `filters` (string, optional): JSON string of filter criteria
+
+**Response:**
+```json
+{
+  "data": {
+    "general": [...],
+    "construction": [...],
+    "loose_furniture": [...],
+    "interior_design": [...],
+    "total": [...]
+  },
+  "summary": {
+    "general_count": 20,
+    "construction_count": 15,
+    "loose_furniture_count": 10,
+    "interior_design_count": 12,
+    "total_count": 57
+  }
+}
+```
+
+#### Get Construction Sales
+```
+GET /api/v1/data/sales/construction
+```
+
+**Query Parameters:**
+- `filters` (string, optional): JSON string of filter criteria
+- `populate` (string, optional): Relations to populate
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "attributes": {
+        "sale_amount": 500000,
+        "construction_cost": 300000,
+        "project_profit": 200000,
+        "customer": { "data": {...} }
+      }
+    }
+  ],
+  "count": 10
+}
+```
+
+#### Get Construction Billings
+```
+GET /api/v1/data/billings/construction
+```
+
+**Query Parameters:**
+- `filters` (string, optional): JSON string of filter criteria
+- `populate` (string, optional): Relations to populate
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "attributes": {
+        "amount": 100000,
+        "construction_cost": 60000,
+        "project_profit": 40000,
+        "customer": { "data": {...} }
+      }
+    }
+  ],
+  "count": 15
+}
+```
+
+**Note:** The sync endpoint (`POST /api/v1/models/ingest/strapi-sync`) now supports all content types:
+- `clients`
+- `construction-sales`, `construction-billings`
+- `loose-furniture-sales`, `loose-furniture-billings`
+- `interior-design-sales`, `interior-design-billings`
+- `all-sales`, `all-billings`
 
 ---
 

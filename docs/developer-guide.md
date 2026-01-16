@@ -104,8 +104,10 @@ npm run dev
 
 ### Data Flow
 
-1. **Strapi** stores all source-of-truth data (clients, deals, billings, etc.)
-2. **Predictive Service** pulls data from Strapi, computes forecasts
+1. **Strapi** stores all source-of-truth data (clients, deals, billings, sales, etc.)
+2. **Predictive Service** pulls data from Strapi via API, computes forecasts
+   - Uses `StrapiClient` to fetch all content types (clients, sales, billings from all branches)
+   - Requires `STRAPI_API_TOKEN` for authentication
 3. **Frontend** fetches data from both Strapi and Predictive Service
 4. **Webhooks** trigger forecast recomputation when Strapi data changes
 
@@ -120,6 +122,15 @@ npm run dev
 - See [API Specification](./api-specification.md) for complete details
 
 ### Predictive Service API (Base: `/api/v1`)
+
+**Data Endpoints:**
+- `GET /api/v1/data/clients` - Get all clients
+- `GET /api/v1/data/sales/all` - Get all sales (all branches)
+- `GET /api/v1/data/billings/all` - Get all billings (all branches)
+- `GET /api/v1/data/sales/construction` - Get construction sales
+- `GET /api/v1/data/billings/construction` - Get construction billings
+
+**Forecast Endpoints:**
 
 - `GET /api/v1/health` - Health check
 - `GET /api/v1/models/forecast/base` - Base forecast
@@ -198,9 +209,12 @@ APP_KEYS=your-keys
 
 ```env
 STRAPI_URL=http://localhost:1337/api
-STRAPI_API_TOKEN=your-token
+STRAPI_API_TOKEN=your-token  # Generate in Strapi admin: Settings → API Tokens
+STRAPI_WEBHOOK_SECRET=your-secret  # Optional, for webhook verification
 CORS_ORIGINS=http://localhost:3000
 ```
+
+**Note:** The predictive service connects to Strapi to fetch all data types (clients, sales, billings from all branches). See [STRAPI_PREDICTIVE_CONNECTION.md](../../STRAPI_PREDICTIVE_CONNECTION.md) for details.
 
 ### Frontend (`project/frontend/.env.local`)
 

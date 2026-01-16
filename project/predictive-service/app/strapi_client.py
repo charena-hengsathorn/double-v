@@ -96,32 +96,297 @@ class StrapiClient:
     
     async def get_billings(
         self,
-        filters: Optional[Dict[str, Any]] = None
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Fetch billing records from Strapi"""
         params = {}
         if filters:
             for key, value in filters.items():
                 params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
                 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(
-                f"{self.base_url}/billings",
-                headers=self._get_headers(),
-                params=params
-            )
-            response.raise_for_status()
-            data = response.json()
-            return data.get("data", [])
+            try:
+                response = await client.get(
+                    f"{self.base_url}/billings",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_clients(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch clients from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/clients",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_construction_sales(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch construction sales from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/construction-sales",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_construction_billings(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch construction billings from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/construction-billings",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_loose_furniture_sales(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch loose furniture sales from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/loose-furniture-sales",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_loose_furniture_billings(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch loose furniture billings from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/loose-furniture-billings",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_interior_design_sales(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch interior design sales from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/interior-design-sales",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_interior_design_billings(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch interior design billings from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/interior-design-billings",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
+    async def get_all_sales(
+        self,
+        filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """Fetch all sales data from all branches"""
+        try:
+            construction = await self.get_construction_sales(filters=filters)
+            loose_furniture = await self.get_loose_furniture_sales(filters=filters)
+            interior_design = await self.get_interior_design_sales(filters=filters)
+            
+            return {
+                "construction": construction,
+                "loose_furniture": loose_furniture,
+                "interior_design": interior_design,
+                "total": construction + loose_furniture + interior_design
+            }
+        except Exception as e:
+            print(f"Error fetching all sales: {e}")
+            return {
+                "construction": [],
+                "loose_furniture": [],
+                "interior_design": [],
+                "total": []
+            }
+    
+    async def get_all_billings(
+        self,
+        filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """Fetch all billings data from all branches"""
+        try:
+            general = await self.get_billings(filters=filters)
+            construction = await self.get_construction_billings(filters=filters)
+            loose_furniture = await self.get_loose_furniture_billings(filters=filters)
+            interior_design = await self.get_interior_design_billings(filters=filters)
+            
+            return {
+                "general": general,
+                "construction": construction,
+                "loose_furniture": loose_furniture,
+                "interior_design": interior_design,
+                "total": general + construction + loose_furniture + interior_design
+            }
+        except Exception as e:
+            print(f"Error fetching all billings: {e}")
+            return {
+                "general": [],
+                "construction": [],
+                "loose_furniture": [],
+                "interior_design": [],
+                "total": []
+            }
     
     async def health_check(self) -> bool:
         """Check if Strapi is accessible"""
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.get(f"{self.base_url.replace('/api', '')}/admin")
+                # Try to access the admin endpoint or a simple API endpoint
+                base_url = self.base_url.replace('/api', '')
+                response = await client.get(f"{base_url}/admin", headers=self._get_headers())
                 return response.status_code < 500
         except:
-            return False
+            # If admin endpoint fails, try a simple API endpoint
+            try:
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    response = await client.get(f"{self.base_url}/clients?pagination[limit]=1", headers=self._get_headers())
+                    return response.status_code < 500
+            except:
+                return False
 
 
 
