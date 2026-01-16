@@ -14,24 +14,36 @@
   "attributes": {
     "deal_id": {
       "type": "string",
-      "unique": true,
-      "required": true
+      "required": true,
+      "unique": true
     },
     "stage": {
       "type": "enumeration",
-      "enum": ["prospecting", "qualification", "proposal", "negotiation", "closed-won", "closed-lost"],
-      "required": true
+      "required": true,
+      "enum": [
+        "prospecting",
+        "qualification",
+        "proposal",
+        "negotiation",
+        "closed-won",
+        "closed-lost"
+      ]
     },
     "status": {
       "type": "enumeration",
-      "enum": ["active", "won", "lost", "stalled"],
-      "required": true
+      "required": true,
+      "enum": [
+        "active",
+        "won",
+        "lost",
+        "stalled"
+      ]
     },
     "probability": {
       "type": "decimal",
+      "required": true,
       "min": 0,
-      "max": 100,
-      "required": true
+      "max": 100
     },
     "deal_value": {
       "type": "decimal",
@@ -68,9 +80,9 @@
     },
     "confidence_override": {
       "type": "decimal",
+      "required": false,
       "min": 0,
-      "max": 100,
-      "required": false
+      "max": 100
     },
     "last_activity_at": {
       "type": "datetime",
@@ -103,13 +115,6 @@
       "relation": "oneToMany",
       "target": "api::risk-flag.risk-flag",
       "mappedBy": "deal"
-    },
-    "billings": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::billing.billing",
-      "mappedBy": "deal"
     }
   }
 }
-

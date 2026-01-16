@@ -19,17 +19,34 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["timing", "budget", "stakeholder", "technical", "competitive", "other"],
+      "enum": [
+        "timing",
+        "budget",
+        "stakeholder",
+        "technical",
+        "competitive",
+        "other"
+      ],
       "required": true
     },
     "severity": {
       "type": "enumeration",
-      "enum": ["low", "medium", "high", "critical"],
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
       "required": true
     },
     "status": {
       "type": "enumeration",
-      "enum": ["open", "investigating", "resolved", "dismissed"],
+      "enum": [
+        "open",
+        "investigating",
+        "resolved",
+        "dismissed"
+      ],
       "required": true,
       "default": "open"
     },
@@ -57,8 +74,3 @@
     }
   }
 }
-
-
-
-
-

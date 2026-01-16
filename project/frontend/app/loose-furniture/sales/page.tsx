@@ -192,8 +192,12 @@ export default function SalesTablePage() {
         submitData.sale_date = dateValue;
       }
 
-      if (editingEntry && editingEntry.id) {
-        await strapiApi.updateLooseFurnitureSales(editingEntry.id, submitData);
+      // Handle both Strapi response formats (with/without attributes)
+      // For UPDATE, prefer documentId (Strapi v4 standard)
+      const entryId = editingEntry?.documentId || editingEntry?.id || (editingEntry?.attributes?.documentId) || (editingEntry?.attributes?.id);
+      
+      if (editingEntry && entryId) {
+        await strapiApi.updateLooseFurnitureSales(entryId, submitData);
       } else {
         await strapiApi.createLooseFurnitureSales(submitData);
       }

@@ -23,7 +23,12 @@
     },
     "scenario": {
       "type": "enumeration",
-      "enum": ["base", "optimistic", "pessimistic", "custom"],
+      "enum": [
+        "base",
+        "optimistic",
+        "pessimistic",
+        "custom"
+      ],
       "required": true,
       "default": "base"
     },
@@ -61,8 +66,3 @@
     }
   }
 }
-
-
-
-
-

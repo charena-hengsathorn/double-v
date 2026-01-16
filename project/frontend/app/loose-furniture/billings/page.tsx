@@ -186,6 +186,10 @@ export default function LooseFurnitureBillingsPage() {
       setRecognitionMonth(finalMonth);
       setRecognitionYear(finalYear);
       
+      const amount = parseFloat(attrs.amount?.toString() || '0') || 0;
+      const cost = parseFloat(attrs.construction_cost?.toString() || '0') || 0;
+      const calculatedProfit = amount - cost;
+      
       setFormData({
         billing_id: attrs.billing_id || '',
         customer: attrs.customer || '',
@@ -198,7 +202,7 @@ export default function LooseFurnitureBillingsPage() {
         status: attrs.status || 'draft',
         payment_reference: attrs.payment_reference || '',
         construction_cost: attrs.construction_cost?.toString() || '',
-        project_profit: attrs.project_profit?.toString() || '',
+        project_profit: calculatedProfit > 0 ? calculatedProfit.toFixed(2) : '0',
       });
     } else {
       setEditingEntry(null);
@@ -239,6 +243,10 @@ export default function LooseFurnitureBillingsPage() {
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
+
+    if (!formData.customer || formData.customer.trim() === '') {
+      errors.customer = 'Client selection is required';
+    }
 
     if (!formData.billing_id || formData.billing_id.trim() === '') {
       errors.billing_id = 'Billing ID is required';
@@ -282,7 +290,12 @@ export default function LooseFurnitureBillingsPage() {
         status: formData.status || 'draft',
         payment_reference: formData.payment_reference?.trim() || undefined,
         construction_cost: formData.construction_cost ? parseFloat(formData.construction_cost) : undefined,
-        project_profit: formData.project_profit ? parseFloat(formData.project_profit) : undefined,
+        project_profit: (() => {
+          const amount = parseFloat(formData.amount) || 0;
+          const cost = parseFloat(formData.construction_cost) || 0;
+          const calculatedProfit = amount - cost;
+          return calculatedProfit > 0 ? calculatedProfit : undefined;
+        })(),
       };
 
       // Handle both Strapi response formats (with/without attributes)
@@ -862,10 +875,17 @@ export default function LooseFurnitureBillingsPage() {
                 label="Client"
                 select
                 value={formData.customer || ''}
-                onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, customer: e.target.value });
+                  if (formErrors.customer) {
+                    setFormErrors({ ...formErrors, customer: '' });
+                  }
+                }}
                 fullWidth
                 variant="outlined"
-                helperText="Select client from sales table"
+                required
+                error={!!formErrors.customer}
+                helperText={formErrors.customer || 'Select client from sales table'}
               >
                 <MenuItem value="">
                   <em>Select Client</em>
@@ -926,7 +946,14 @@ export default function LooseFurnitureBillingsPage() {
                 type="number"
                 value={formData.amount}
                 onChange={(e) => {
-                  setFormData({ ...formData, amount: e.target.value });
+                  const amount = e.target.value;
+                  const cost = parseFloat(formData.construction_cost) || 0;
+                  const calculatedProfit = (parseFloat(amount) || 0) - cost;
+                  setFormData({ 
+                    ...formData, 
+                    amount: amount,
+                    project_profit: calculatedProfit > 0 ? calculatedProfit.toFixed(2) : '0'
+                  });
                   if (formErrors.amount) {
                     setFormErrors({ ...formErrors, amount: '' });
                   }
@@ -946,7 +973,16 @@ export default function LooseFurnitureBillingsPage() {
                 label="Loose Furniture Cost"
                 type="number"
                 value={formData.construction_cost}
-                onChange={(e) => setFormData({ ...formData, construction_cost: e.target.value })}
+                onChange={(e) => {
+                  const cost = e.target.value;
+                  const amount = parseFloat(formData.amount) || 0;
+                  const calculatedProfit = amount - (parseFloat(cost) || 0);
+                  setFormData({ 
+                    ...formData, 
+                    construction_cost: cost,
+                    project_profit: calculatedProfit > 0 ? calculatedProfit.toFixed(2) : '0'
+                  });
+                }}
                 fullWidth
                 variant="outlined"
                 InputProps={{
@@ -959,15 +995,26 @@ export default function LooseFurnitureBillingsPage() {
               <TextField
                 label="Project Profit"
                 type="number"
-                value={formData.project_profit}
-                onChange={(e) => setFormData({ ...formData, project_profit: e.target.value })}
+                value={(() => {
+                  const amount = parseFloat(formData.amount) || 0;
+                  const cost = parseFloat(formData.construction_cost) || 0;
+                  const calculatedProfit = amount - cost;
+                  return calculatedProfit > 0 ? calculatedProfit.toFixed(2) : '0';
+                })()}
                 fullWidth
                 variant="outlined"
+                disabled
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
-                helperText="Project profit for this billing entry"
+                helperText="Calculated as Amount - Loose Furniture Cost"
                 inputProps={{ min: 0, step: 0.01 }}
+                sx={{
+                  '& .MuiInputBase-input.Mui-disabled': {
+                    WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
               />
 
               <TextField

@@ -14,8 +14,8 @@
   "attributes": {
     "milestone_id": {
       "type": "string",
-      "unique": true,
-      "required": true
+      "required": true,
+      "unique": true
     },
     "sequence_order": {
       "type": "integer",
@@ -39,8 +39,13 @@
     },
     "billing_type": {
       "type": "enumeration",
-      "enum": ["upfront", "milestone", "recurring", "usage-based"],
-      "required": false
+      "required": false,
+      "enum": [
+        "upfront",
+        "milestone",
+        "recurring",
+        "usage-based"
+      ]
     },
     "collection_terms": {
       "type": "string",
@@ -51,17 +56,6 @@
       "relation": "manyToOne",
       "target": "api::pipeline-deal.pipeline-deal",
       "inversedBy": "deal_milestones"
-    },
-    "billings": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::billing.billing",
-      "mappedBy": "milestone"
     }
   }
 }
-
-
-
-
-

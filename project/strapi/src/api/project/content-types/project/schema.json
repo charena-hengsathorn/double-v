@@ -27,7 +27,12 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["active", "completed", "on-hold", "cancelled"],
+      "enum": [
+        "active",
+        "completed",
+        "on-hold",
+        "cancelled"
+      ],
       "required": false
     },
     "complexity_score": {
@@ -62,8 +67,3 @@
     }
   }
 }
-
-
-
-
-

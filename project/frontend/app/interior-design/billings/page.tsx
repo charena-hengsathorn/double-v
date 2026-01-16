@@ -232,6 +232,10 @@ export default function BillingsTablePage() {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
+    if (!formData.customer || formData.customer.trim() === '') {
+      errors.customer = 'Client selection is required';
+    }
+
     if (!formData.billing_id || formData.billing_id.trim() === '') {
       errors.billing_id = 'Billing ID is required';
     }
@@ -837,10 +841,17 @@ export default function BillingsTablePage() {
                 label="Client"
                 select
                 value={formData.customer || ''}
-                onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, customer: e.target.value });
+                  if (formErrors.customer) {
+                    setFormErrors({ ...formErrors, customer: '' });
+                  }
+                }}
                 fullWidth
                 variant="outlined"
-                helperText="Select client from sales table"
+                required
+                error={!!formErrors.customer}
+                helperText={formErrors.customer || 'Select client from sales table'}
               >
                 <MenuItem value="">
                   <em>Select Client</em>

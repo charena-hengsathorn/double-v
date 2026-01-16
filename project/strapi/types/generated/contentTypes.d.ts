@@ -430,56 +430,6 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiBillingBilling extends Struct.CollectionTypeSchema {
-  collectionName: 'billings';
-  info: {
-    description: 'Construction billing records and invoice information';
-    displayName: 'Construction - Billings';
-    pluralName: 'billings';
-    singularName: 'billing';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
-    billing_id: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
-    collected_date: Schema.Attribute.Date;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
-    customer: Schema.Attribute.String;
-    deal: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::pipeline-deal.pipeline-deal'
-    >;
-    invoice_date: Schema.Attribute.Date & Schema.Attribute.Required;
-    invoice_number: Schema.Attribute.String;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::billing.billing'
-    > &
-      Schema.Attribute.Private;
-    milestone: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::deal-milestone.deal-milestone'
-    >;
-    payment_reference: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
-    recognition_month: Schema.Attribute.Date;
-    status: Schema.Attribute.Enumeration<
-      ['draft', 'sent', 'paid', 'overdue', 'cancelled']
-    >;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiClientClient extends Struct.CollectionTypeSchema {
   collectionName: 'clients';
   info: {
@@ -617,7 +567,6 @@ export interface ApiDealMilestoneDealMilestone
     billing_type: Schema.Attribute.Enumeration<
       ['upfront', 'milestone', 'recurring', 'usage-based']
     >;
-    billings: Schema.Attribute.Relation<'oneToMany', 'api::billing.billing'>;
     collection_terms: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -879,7 +828,6 @@ export interface ApiPipelineDealPipelineDeal
     draftAndPublish: false;
   };
   attributes: {
-    billings: Schema.Attribute.Relation<'oneToMany', 'api::billing.billing'>;
     confidence_override: Schema.Attribute.Decimal &
       Schema.Attribute.SetMinMax<
         {
@@ -1050,40 +998,6 @@ export interface ApiRiskFlagRiskFlag extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'open'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiSaleSale extends Struct.CollectionTypeSchema {
-  collectionName: 'sales';
-  info: {
-    description: 'Construction sales entries for cashflow tracking';
-    displayName: 'Construction - Sales';
-    pluralName: 'sales';
-    singularName: 'sale';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    client: Schema.Attribute.String & Schema.Attribute.Required;
-    construction_cost: Schema.Attribute.Decimal & Schema.Attribute.Required;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::sale.sale'> &
-      Schema.Attribute.Private;
-    notes: Schema.Attribute.Text;
-    project_profit: Schema.Attribute.Decimal & Schema.Attribute.Required;
-    publishedAt: Schema.Attribute.DateTime;
-    sale_amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
-    sale_date: Schema.Attribute.Date;
-    status: Schema.Attribute.Enumeration<['Confirmed', 'Pending', 'Closed']> &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'Pending'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1642,7 +1556,6 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::billing.billing': ApiBillingBilling;
       'api::client.client': ApiClientClient;
       'api::construction-billing.construction-billing': ApiConstructionBillingConstructionBilling;
       'api::construction-sale.construction-sale': ApiConstructionSaleConstructionSale;
@@ -1655,7 +1568,6 @@ declare module '@strapi/strapi' {
       'api::pipeline-deal.pipeline-deal': ApiPipelineDealPipelineDeal;
       'api::project.project': ApiProjectProject;
       'api::risk-flag.risk-flag': ApiRiskFlagRiskFlag;
-      'api::sale.sale': ApiSaleSale;
       'api::user-profile.user-profile': ApiUserProfileUserProfile;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

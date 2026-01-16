@@ -571,8 +571,19 @@ export const strapiApi = {
       headers,
       body: JSON.stringify({ data }),
     });
+    
+    if (!response.ok) {
+      let errorMessage = 'Failed to update sale';
+      try {
+        const result = await response.json();
+        errorMessage = result.error?.message || result.error || `HTTP ${response.status}: ${response.statusText}`;
+      } catch (e) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Failed to update sale');
     return result;
   },
 
