@@ -87,7 +87,7 @@ async def get_base_forecast(
     end_month: Optional[date] = Query(None, description="End of forecast period"),
     currency: str = Query("THB", description="Base currency for aggregation")
 ):
-    """Get base forecast with probability-weighted revenue outlook"""
+    """Get base forecast - uses pipeline deals if available, falls back to sales/billings data"""
     try:
         result = await forecast_service.compute_base_forecast(
             start_month=start_month,
@@ -261,7 +261,7 @@ async def get_risk_heatmap(
     group_by_probability: bool = Query(True),
     min_deal_value: Optional[float] = Query(None)
 ):
-    """Get risk heatmap with deals grouped by stage and probability"""
+    """Get risk heatmap - uses pipeline deals if available, falls back to sales data"""
     try:
         from decimal import Decimal
         min_value = Decimal(str(min_deal_value)) if min_deal_value else None

@@ -62,8 +62,40 @@ export default function SalesPage() {
       setLoading(true);
       setError(null);
       
-      const response = await strapiApi.getSales();
-      setSales(response.data || []);
+      // Fetch sales from all branches
+      const [
+        constructionSales,
+        interiorDesignSales,
+        looseFurnitureSales
+      ] = await Promise.all([
+        strapiApi.getConstructionSales().catch(() => ({ data: [] })),
+        strapiApi.getInteriorDesignSales().catch(() => ({ data: [] })),
+        strapiApi.getLooseFurnitureSales().catch(() => ({ data: [] })),
+      ]);
+
+      // Combine all sales data and normalize format
+      const allSales = [
+        ...(constructionSales?.data || []),
+        ...(interiorDesignSales?.data || []),
+        ...(looseFurnitureSales?.data || [])
+      ].map((sale: any) => {
+        // Normalize Strapi v4 format (with attributes) to direct format
+        const attrs = sale.attributes || sale;
+        return {
+          id: sale.id || sale.documentId,
+          client: attrs.client || attrs.customer || '-',
+          sale_amount: parseFloat(attrs.sale_amount || attrs.amount || 0),
+          construction_cost: parseFloat(attrs.construction_cost || attrs.cost || 0),
+          project_profit: parseFloat(attrs.project_profit || attrs.profit || 0),
+          status: attrs.status || 'Pending',
+          sale_date: attrs.sale_date,
+          notes: attrs.notes || '',
+          createdAt: sale.createdAt || attrs.createdAt,
+          updatedAt: sale.updatedAt || attrs.updatedAt,
+        };
+      });
+      
+      setSales(allSales);
     } catch (err: any) {
       setError(err.message || 'Failed to load sales data');
       console.error('Error loading sales:', err);

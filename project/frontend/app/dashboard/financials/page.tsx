@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Alert, Button } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Button, Card, CardContent } from '@mui/material';
+import { Info as InfoIcon } from '@mui/icons-material';
 import { strapiApi, predictiveApi } from '@/lib/api';
 import StackedAreaChart from '@/components/StackedAreaChart';
 import WaterfallChart from '@/components/WaterfallChart';
@@ -24,14 +25,32 @@ export default function Financials() {
       setLoading(true);
       setError(null);
 
-      const [forecastData, billingsData, waterfallData] = await Promise.all([
+      // Fetch data from all branches
+      const [
+        forecastData,
+        constructionBillings,
+        interiorDesignBillings,
+        looseFurnitureBillings,
+        waterfallData
+      ] = await Promise.all([
         predictiveApi.getBaseForecast().catch(() => null),
-        strapiApi.getBillings().catch(() => ({ data: [] })),
+        strapiApi.getConstructionBillings().catch(() => ({ data: [] })),
+        strapiApi.getInteriorDesignBillings().catch(() => ({ data: [] })),
+        strapiApi.getLooseFurnitureBillings().catch(() => ({ data: [] })),
         predictiveApi.getForecastWaterfall().catch(() => null),
       ]);
 
+      // Combine all billings data
+      const allBillings = {
+        data: [
+          ...(constructionBillings?.data || []),
+          ...(interiorDesignBillings?.data || []),
+          ...(looseFurnitureBillings?.data || [])
+        ]
+      };
+
       setForecast(forecastData);
-      setBillings(billingsData || { data: [] });
+      setBillings(allBillings);
       setWaterfall(waterfallData);
     } catch (err: any) {
       if (err.response?.status !== 404) {
@@ -64,7 +83,8 @@ export default function Financials() {
     let outstandingAR = 0;
 
     billings.data.forEach((billing: any) => {
-      const attrs = billing.attributes || {};
+      // Handle both Strapi v4 format (with attributes) and direct format
+      const attrs = billing.attributes || billing;
       const invoiceDate = attrs.invoice_date ? new Date(attrs.invoice_date) : null;
       const collectedDate = attrs.collected_date ? new Date(attrs.collected_date) : null;
       const amount = parseFloat(attrs.amount || 0);
@@ -161,7 +181,7 @@ export default function Financials() {
       </Box>
 
       {/* Charts */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, gap: 3, mb: 4 }}>
         <StackedAreaChart
           data={monthlyTotals}
           title="Revenue Forecast"
@@ -173,6 +193,32 @@ export default function Financials() {
           title="Forecast Waterfall"
         />
       </Box>
+
+      {/* Forecast Logic Disclaimer */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.6 }}
+      >
+        <Card sx={{ borderRadius: 3, bgcolor: 'grey.50' }}>
+          <CardContent sx={{ p: 2.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <InfoIcon sx={{ color: 'text.secondary', fontSize: 20, mt: 0.5, flexShrink: 0 }} />
+              <Box>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mb: 0.5 }}>
+                  Forecast Logic Disclaimer
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.6 }}>
+                  Forecasts are generated using a hybrid approach: when pipeline deals are available, they are used with probability-weighted revenue recognition. 
+                  Otherwise, forecasts are derived from historical sales and billings data. Confirmed sales are projected at 100% probability over 12 months, 
+                  while pending sales use 50% probability over 6 months. Historical trends are incorporated as tentative projections. 
+                  These forecasts are estimates and should not be considered guarantees of future performance.
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
     </Box>
   );
 }

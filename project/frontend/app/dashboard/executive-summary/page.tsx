@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Button, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from '@mui/material';
-import { Download as DownloadIcon } from '@mui/icons-material';
+import { Download as DownloadIcon, Info as InfoIcon } from '@mui/icons-material';
 import { predictiveApi } from '@/lib/api';
 import KPICard from '@/components/KPICard';
 import { motion } from 'framer-motion';
@@ -308,6 +308,32 @@ export default function ExecutiveSummary() {
                 </Typography>
               </Box>
             )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Forecast Logic Disclaimer */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.6 }}
+      >
+        <Card sx={{ borderRadius: 3, bgcolor: 'grey.50', mt: 4 }}>
+          <CardContent sx={{ p: 2.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <InfoIcon sx={{ color: 'text.secondary', fontSize: 20, mt: 0.5, flexShrink: 0 }} />
+              <Box>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mb: 0.5 }}>
+                  Forecast Logic Disclaimer
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.6 }}>
+                  Forecasts are generated using a hybrid approach: when pipeline deals are available, they are used with probability-weighted revenue recognition. 
+                  Otherwise, forecasts are derived from historical sales and billings data. Confirmed sales are projected at 100% probability over 12 months, 
+                  while pending sales use 50% probability over 6 months. Historical trends are incorporated as tentative projections. 
+                  These forecasts are estimates and should not be considered guarantees of future performance.
+                </Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
       </motion.div>
