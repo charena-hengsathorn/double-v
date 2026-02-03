@@ -8,8 +8,9 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (authHeader) { headers['Authorization'] = authHeader; }
+    const search = request.nextUrl.search || '';
     
-    const response = await fetch(`${STRAPI_BASE_URL}${STRAPI_ENDPOINT}`, {
+    const response = await fetch(`${STRAPI_BASE_URL}${STRAPI_ENDPOINT}${search}`, {
       method: 'GET',
       headers,
       cache: 'no-store',

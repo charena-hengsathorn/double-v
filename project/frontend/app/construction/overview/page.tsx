@@ -194,9 +194,9 @@ export default function ConstructionOverviewPage() {
           if (year === 2025 || year === new Date().getFullYear()) {
             // Only add to monthly columns if status is paid
             if (attrs.status === 'paid') {
-              clientData.monthlySales[month] += amount;
-              clientData.monthlyCosts[month] += constructionCost;
-              clientData.monthlyProfits[month] += projectProfit;
+            clientData.monthlySales[month] += amount;
+            clientData.monthlyCosts[month] += constructionCost;
+            clientData.monthlyProfits[month] += projectProfit;
             }
           }
         } else if (attrs.collected_date) {
@@ -206,9 +206,9 @@ export default function ConstructionOverviewPage() {
           if (year === 2025 || year === new Date().getFullYear()) {
             // Only add to monthly columns if status is paid
             if (attrs.status === 'paid') {
-              clientData.monthlySales[month] += amount;
-              clientData.monthlyCosts[month] += constructionCost;
-              clientData.monthlyProfits[month] += projectProfit;
+            clientData.monthlySales[month] += amount;
+            clientData.monthlyCosts[month] += constructionCost;
+            clientData.monthlyProfits[month] += projectProfit;
             }
           }
         }

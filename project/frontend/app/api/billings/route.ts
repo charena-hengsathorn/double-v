@@ -6,6 +6,7 @@ const STRAPI_BASE_URL = process.env.NEXT_PUBLIC_STRAPI_URL?.replace('/api', '') 
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
+    const search = request.nextUrl.search || '';
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
       headers['Authorization'] = authHeader;
     }
     
-    const response = await fetch(`${STRAPI_BASE_URL}/api/billings`, {
+    const response = await fetch(`${STRAPI_BASE_URL}/api/billings${search}`, {
       method: 'GET',
       headers,
       cache: 'no-store',

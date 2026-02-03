@@ -556,8 +556,30 @@ export const strapiApi = {
       headers,
       body: JSON.stringify({ data }),
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Failed to create billing');
+    // Handle non-JSON error responses + Strapi error object shapes
+    const contentType = response.headers.get('content-type');
+    let result: any = null;
+    if (contentType && contentType.includes('application/json')) {
+      result = await response.json().catch(() => ({}));
+    } else {
+      const text = await response.text().catch(() => '');
+      if (!response.ok) {
+        throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      return { data: text };
+    }
+
+    if (!response.ok) {
+      const err = result?.error;
+      const message =
+        err?.message ||
+        err?.error?.message ||
+        (typeof err === 'string' ? err : undefined) ||
+        (err ? JSON.stringify(err) : undefined) ||
+        `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(message);
+    }
+
     return result;
   },
 

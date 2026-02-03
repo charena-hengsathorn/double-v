@@ -25,6 +25,13 @@ import {
   Divider,
   InputAdornment,
   Breadcrumbs,
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Snackbar,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -32,6 +39,7 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   FilterList as FilterIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { strapiApi } from '@/lib/api';
 import { motion } from 'framer-motion';
@@ -70,6 +78,22 @@ export default function SalesTablePage() {
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedClient, setSelectedClient] = useState<string>('all');
+  
+  // Bulk selection state
+  const [selectedEntries, setSelectedEntries] = useState<Set<string | number>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  
+  // Notification state
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     loadData();
@@ -341,6 +365,101 @@ export default function SalesTablePage() {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   };
 
+  // Bulk selection handlers (will be defined after filteredSales)
+  const handleSelectAll = (checked: boolean, salesToSelect: any[]) => {
+    if (checked) {
+      const allIds = new Set<string | number>();
+      salesToSelect.forEach((sale: any) => {
+        const id = sale.documentId || sale.id;
+        if (id) allIds.add(id);
+      });
+      setSelectedEntries(allIds);
+    } else {
+      setSelectedEntries(new Set());
+    }
+  };
+
+  const handleSelectEntry = (id: string | number, checked: boolean) => {
+    const newSelected = new Set(selectedEntries);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedEntries(newSelected);
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedEntries.size > 0) {
+      setBulkDeleteDialogOpen(true);
+    }
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedEntries.size === 0) return;
+
+    if (deleting) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+
+      const deletePromises = Array.from(selectedEntries).map(async (entryId) => {
+        try {
+          await strapiApi.deleteLooseFurnitureSales(entryId);
+        } catch (err: any) {
+          console.error(`Failed to delete entry ${entryId}:`, err);
+          throw err;
+        }
+      });
+
+      await Promise.all(deletePromises);
+
+      setSnackbar({
+        open: true,
+        message: `Successfully deleted ${selectedEntries.size} ${selectedEntries.size === 1 ? 'entry' : 'entries'}`,
+        severity: 'success',
+      });
+
+      setBulkDeleteDialogOpen(false);
+      setSelectedEntries(new Set());
+      await loadData();
+    } catch (err: any) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to delete some entries',
+        severity: 'error',
+      });
+      console.error('Error deleting entries:', err);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setBulkDeleteDialogOpen(false);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // Calculate selection state (must be after filteredSales is defined)
+  const isAllSelected = filteredSales.length > 0 && filteredSales.every((sale: any) => {
+    const id = sale.documentId || sale.id;
+    return id && selectedEntries.has(id);
+  });
+
+  const isIndeterminate = selectedEntries.size > 0 && selectedEntries.size < filteredSales.filter((sale: any) => {
+    const id = sale.documentId || sale.id;
+    return id;
+  }).length;
+
+  // Wrapper for handleSelectAll that uses filteredSales
+  const handleSelectAllWrapper = (checked: boolean) => {
+    handleSelectAll(checked, filteredSales);
+  };
+
   return (
     <Box>
       <motion.div
@@ -382,15 +501,28 @@ export default function SalesTablePage() {
             Billing Table
           </Button>
         </Box>
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDrawer()}
-          sx={{ textTransform: 'none', borderRadius: 2 }}
-        >
-          Add Sales Entry
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDrawer()}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Add Sales Entry
+          </Button>
+          {selectedEntries.size > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={handleBulkDeleteClick}
+              sx={{ textTransform: 'none', borderRadius: 2 }}
+            >
+              Delete Selected ({selectedEntries.size})
+            </Button>
+          )}
+        </Box>
       </Box>
 
         {/* Filters */}
@@ -498,6 +630,14 @@ export default function SalesTablePage() {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'grey.50' }}>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            indeterminate={isIndeterminate}
+                            checked={isAllSelected}
+                            onChange={(e) => handleSelectAllWrapper(e.target.checked)}
+                            color="primary"
+                          />
+                        </TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Client</TableCell>
                         <TableCell sx={{ fontWeight: 500 }} align="right">Sale Amount</TableCell>
                         <TableCell sx={{ fontWeight: 500 }} align="right">Construction Cost</TableCell>
@@ -518,9 +658,18 @@ export default function SalesTablePage() {
                           const profit = parseFloat(attrs.project_profit || 0);
                           const margin = saleAmount > 0 ? ((profit / saleAmount) * 100).toFixed(1) : '0.0';
                           const saleDate = attrs.sale_date || attrs.createdAt || sale.sale_date || sale.createdAt;
+                          const entryId = sale.documentId || sale.id;
+                          const isSelected = entryId ? selectedEntries.has(entryId) : false;
                           
                           return (
-                            <TableRow key={sale.id || idx} hover>
+                            <TableRow key={sale.id || idx} hover selected={isSelected}>
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onChange={(e) => entryId && handleSelectEntry(entryId, e.target.checked)}
+                                  color="primary"
+                                />
+                              </TableCell>
                               <TableCell sx={{ fontWeight: 500 }}>
                                 {attrs.client || '—'}
                               </TableCell>
@@ -581,7 +730,7 @@ export default function SalesTablePage() {
                         })
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                          <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
                             <Typography variant="body2" color="text.secondary">
                               No sales entries match the selected filters
                             </Typography>
@@ -607,6 +756,7 @@ export default function SalesTablePage() {
                             }
                           }}
                         >
+                          <TableCell>-</TableCell>
                           <TableCell sx={{ fontWeight: 700, fontSize: '1rem' }}>
                             Total ({filteredSales.length})
                           </TableCell>
@@ -819,6 +969,55 @@ export default function SalesTablePage() {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog
+        open={bulkDeleteDialogOpen}
+        onClose={handleBulkDeleteCancel}
+        aria-labelledby="bulk-delete-dialog-title"
+        aria-describedby="bulk-delete-dialog-description"
+      >
+        <DialogTitle id="bulk-delete-dialog-title">
+          Delete {selectedEntries.size} {selectedEntries.size === 1 ? 'Entry' : 'Entries'}?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="bulk-delete-dialog-description">
+            Are you sure you want to delete {selectedEntries.size} selected {selectedEntries.size === 1 ? 'sales entry' : 'sales entries'}? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleBulkDeleteCancel} disabled={deleting} sx={{ textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBulkDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            sx={{ textTransform: 'none' }}
+            startIcon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+          >
+            {deleting ? 'Deleting...' : `Delete ${selectedEntries.size} ${selectedEntries.size === 1 ? 'Entry' : 'Entries'}`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success/Error Notification */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

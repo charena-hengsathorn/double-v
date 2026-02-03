@@ -33,6 +33,7 @@ import {
   DialogContentText,
   DialogActions,
   Snackbar,
+  Checkbox,
 } from '@mui/material';
 import {
   FilterList as FilterIcon,
@@ -45,6 +46,7 @@ import {
 import { strapiApi } from '@/lib/api';
 import { motion } from 'framer-motion';
 import BranchCashflowTabs from '../../cashflow/components/BranchCashflowTabs';
+import MultiMonthBillingDrawer, { MonthlyBillingEntry } from '@/components/MultiMonthBillingDrawer';
 
 interface BillingEntry {
   id?: string;
@@ -73,6 +75,7 @@ export default function LooseFurnitureBillingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [multiMonthDrawerOpen, setMultiMonthDrawerOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -102,6 +105,10 @@ export default function LooseFurnitureBillingsPage() {
   // Delete confirmation dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  
+  // Bulk selection state
+  const [selectedEntries, setSelectedEntries] = useState<Set<string | number>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   
   // Notification state
   const [snackbar, setSnackbar] = useState<{
@@ -519,6 +526,97 @@ export default function LooseFurnitureBillingsPage() {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   };
 
+  // Bulk selection handlers (will be defined after filteredBillings)
+  const handleSelectAll = (checked: boolean, billingsToSelect: any[]) => {
+    if (checked) {
+      const allIds = new Set<string | number>();
+      billingsToSelect.forEach((billing: any) => {
+        const id = billing.documentId || billing.id;
+        if (id) allIds.add(id);
+      });
+      setSelectedEntries(allIds);
+    } else {
+      setSelectedEntries(new Set());
+    }
+  };
+
+  const handleSelectEntry = (id: string | number, checked: boolean) => {
+    const newSelected = new Set(selectedEntries);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedEntries(newSelected);
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedEntries.size > 0) {
+      setBulkDeleteDialogOpen(true);
+    }
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedEntries.size === 0) return;
+
+    if (deleting) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+
+      const deletePromises = Array.from(selectedEntries).map(async (entryId) => {
+        try {
+          await strapiApi.deleteLooseFurnitureBillings(entryId);
+        } catch (err: any) {
+          console.error(`Failed to delete entry ${entryId}:`, err);
+          throw err;
+        }
+      });
+
+      await Promise.all(deletePromises);
+
+      setSnackbar({
+        open: true,
+        message: `Successfully deleted ${selectedEntries.size} ${selectedEntries.size === 1 ? 'entry' : 'entries'}`,
+        severity: 'success',
+      });
+
+      setBulkDeleteDialogOpen(false);
+      setSelectedEntries(new Set());
+      await loadData();
+    } catch (err: any) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to delete some entries',
+        severity: 'error',
+      });
+      console.error('Error deleting entries:', err);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setBulkDeleteDialogOpen(false);
+  };
+
+  // Calculate selection state (must be after filteredBillings is defined)
+  const isAllSelected = filteredBillings.length > 0 && filteredBillings.every((billing: any) => {
+    const id = billing.documentId || billing.id;
+    return id && selectedEntries.has(id);
+  });
+
+  const isIndeterminate = selectedEntries.size > 0 && selectedEntries.size < filteredBillings.filter((billing: any) => {
+    const id = billing.documentId || billing.id;
+    return id;
+  }).length;
+
+  // Wrapper for handleSelectAll that uses filteredBillings
+  const handleSelectAllWrapper = (checked: boolean) => {
+    handleSelectAll(checked, filteredBillings);
+  };
+
   return (
     <Box>
       <motion.div
@@ -560,15 +658,37 @@ export default function LooseFurnitureBillingsPage() {
             Loose Furniture - Billings
           </Button>
         </Box>
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDrawer()}
-          sx={{ textTransform: 'none', borderRadius: 2 }}
-        >
-          Add Billing Entry
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDrawer()}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Add Billing Entry
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setMultiMonthDrawerOpen(true)}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Add Multi-Month Entry
+          </Button>
+          {selectedEntries.size > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={handleBulkDeleteClick}
+              sx={{ textTransform: 'none', borderRadius: 2 }}
+            >
+              Delete Selected ({selectedEntries.size})
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {/* Filters */}
@@ -678,6 +798,14 @@ export default function LooseFurnitureBillingsPage() {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'grey.50' }}>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            indeterminate={isIndeterminate}
+                            checked={isAllSelected}
+                            onChange={(e) => handleSelectAllWrapper(e.target.checked)}
+                            color="primary"
+                          />
+                        </TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Billing ID</TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Client</TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>Invoice Number</TableCell>
@@ -708,7 +836,16 @@ export default function LooseFurnitureBillingsPage() {
                               });
                             }
                           }
-                          return (<TableRow key={billing.id || idx} hover>
+                          const entryId = billing.documentId || billing.id;
+                          const isSelected = entryId ? selectedEntries.has(entryId) : false;
+                          return (<TableRow key={billing.id || idx} hover selected={isSelected}>
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onChange={(e) => entryId && handleSelectEntry(entryId, e.target.checked)}
+                                  color="primary"
+                                />
+                              </TableCell>
                               <TableCell sx={{ fontWeight: 500 }}>
                                 {attrs.billing_id || '—'}
                               </TableCell>
@@ -775,7 +912,7 @@ export default function LooseFurnitureBillingsPage() {
                         })
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={13} align="center" sx={{ py: 4 }}><Typography variant="body2" color="text.secondary">No billings match the selected filters</Typography></TableCell>
+                          <TableCell colSpan={14} align="center" sx={{ py: 4 }}><Typography variant="body2" color="text.secondary">No billings match the selected filters</Typography></TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -788,6 +925,7 @@ export default function LooseFurnitureBillingsPage() {
                     <Table>
                       <TableBody>
                         <TableRow sx={{ backgroundColor: 'grey.300', '& .MuiTableCell-root': { fontWeight: 600, borderBottom: 'none', fontSize: '0.95rem' } }}>
+                          <TableCell>-</TableCell>
                           <TableCell sx={{ fontWeight: 700, fontSize: '1rem' }}>Total ({filteredBillings.length})</TableCell>
                           <TableCell>-</TableCell>
                           <TableCell>-</TableCell>
@@ -1203,6 +1341,102 @@ export default function LooseFurnitureBillingsPage() {
             startIcon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
           >
             {deleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Multi-Month Billing Drawer */}
+      <MultiMonthBillingDrawer
+        open={multiMonthDrawerOpen}
+        onClose={() => setMultiMonthDrawerOpen(false)}
+        onSubmit={async (entries: MonthlyBillingEntry[]) => {
+          // Handle both creates and updates (do NOT call loadData per entry)
+          let createdCount = 0;
+          let updatedCount = 0;
+          
+          for (const entry of entries) {
+            const submitData: any = {
+              billing_id: entry.billing_id,
+              customer: entry.customer,
+              invoice_number: entry.invoice_number,
+              invoice_date: entry.invoice_date,
+              amount: entry.amount,
+              currency: entry.currency,
+              collected_date: entry.collected_date,
+              recognition_month: entry.recognition_month,
+              status: entry.status,
+              payment_reference: entry.payment_reference,
+              construction_cost: entry.construction_cost,
+              project_profit: entry.project_profit,
+            };
+            
+            try {
+              // Check if this is an update (has documentId or id)
+              const entryId = entry.documentId || entry.id;
+              if (entryId) {
+                // Update existing entry
+                await strapiApi.updateLooseFurnitureBillings(entryId, submitData);
+                updatedCount++;
+              } else {
+                // Create new entry
+                await strapiApi.createLooseFurnitureBillings(submitData);
+                createdCount++;
+              }
+            } catch (err: any) {
+              const monthLabel = entry.recognition_month || 'unknown-month';
+              const action = entry.documentId || entry.id ? 'update' : 'create';
+              throw new Error(`Failed to ${action} billing entry for ${monthLabel}: ${err?.message || err}`);
+            }
+          }
+
+          // Reload data ONCE at the end (avoids unmounting the drawer mid-operation)
+          await loadData();
+          
+          // Show appropriate success message
+          const messages: string[] = [];
+          if (updatedCount > 0) messages.push(`Updated ${updatedCount} ${updatedCount === 1 ? 'entry' : 'entries'}`);
+          if (createdCount > 0) messages.push(`Created ${createdCount} ${createdCount === 1 ? 'entry' : 'entries'}`);
+          
+          setSnackbar({
+            open: true,
+            message: messages.join(' & ') || `Successfully processed ${entries.length} billing entries`,
+            severity: 'success',
+          });
+        }}
+        currentMonth={currentMonth}
+        currentYear={currentYear}
+        clients={getUniqueCustomersFromSales()}
+        branchType="loose-furniture"
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog
+        open={bulkDeleteDialogOpen}
+        onClose={handleBulkDeleteCancel}
+        aria-labelledby="bulk-delete-dialog-title"
+        aria-describedby="bulk-delete-dialog-description"
+      >
+        <DialogTitle id="bulk-delete-dialog-title">
+          Delete {selectedEntries.size} {selectedEntries.size === 1 ? 'Entry' : 'Entries'}?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="bulk-delete-dialog-description">
+            Are you sure you want to delete {selectedEntries.size} selected {selectedEntries.size === 1 ? 'billing entry' : 'billing entries'}? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleBulkDeleteCancel} disabled={deleting} sx={{ textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBulkDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            sx={{ textTransform: 'none' }}
+            startIcon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+          >
+            {deleting ? 'Deleting...' : `Delete ${selectedEntries.size} ${selectedEntries.size === 1 ? 'Entry' : 'Entries'}`}
           </Button>
         </DialogActions>
       </Dialog>
