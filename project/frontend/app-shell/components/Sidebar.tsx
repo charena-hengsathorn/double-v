@@ -42,7 +42,7 @@ const navigation = [
 const dashboardSubPages = [
   { name: 'Pipeline Integrity', href: '/dashboard/pipeline-integrity', icon: AssessmentIcon },
   { name: 'Financials', href: '/dashboard/financials', icon: AccountBalanceIcon },
-  { name: 'Executive Summary', href: '/dashboard/executive-summary', icon: SummarizeIcon },
+  { name: 'Executive Insights', href: '/dashboard/executive-summary', icon: SummarizeIcon },
   { name: 'Sales', href: '/dashboard/sales', icon: SalesIcon },
   { name: 'Cashflow', href: '/dashboard/cashflow', icon: CashflowIcon },
 ];

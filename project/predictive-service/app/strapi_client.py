@@ -371,6 +371,34 @@ class StrapiClient:
                 "total": []
             }
     
+    async def get_projects(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        populate: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Fetch projects from Strapi"""
+        params = {}
+        if filters:
+            for key, value in filters.items():
+                params[f"filters[{key}]"] = value
+        if populate:
+            params["populate"] = populate
+            
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/projects",
+                    headers=self._get_headers(),
+                    params=params
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("data", [])
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    return []
+                raise
+    
     async def health_check(self) -> bool:
         """Check if Strapi is accessible"""
         try:

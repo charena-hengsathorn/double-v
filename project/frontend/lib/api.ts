@@ -41,6 +41,25 @@ export const strapiApi = {
     }
   },
 
+  async getProjects(filters?: Record<string, any>) {
+    try {
+      const params = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          params.append(`filters[${key}]`, value);
+        });
+      }
+      params.append('populate', 'client');
+      const response = await strapiClient.get(`/projects?${params.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return { data: [] };
+      }
+      throw error;
+    }
+  },
+
   async getPipelineDeals(filters?: Record<string, any>) {
     try {
       const params = new URLSearchParams();

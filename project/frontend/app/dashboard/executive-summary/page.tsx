@@ -6,6 +6,7 @@ import { Download as DownloadIcon, Info as InfoIcon } from '@mui/icons-material'
 import { predictiveApi } from '@/lib/api';
 import KPICard from '@/components/KPICard';
 import { motion } from 'framer-motion';
+import ExecutiveTabs from '../components/ExecutiveTabs';
 
 export default function ExecutiveSummary() {
   const [forecast, setForecast] = useState<any>(null);
@@ -77,7 +78,7 @@ export default function ExecutiveSummary() {
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
         <CircularProgress size={48} />
         <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-          Loading executive summary...
+          Loading executive insights...
         </Typography>
       </Box>
     );
@@ -110,13 +111,20 @@ export default function ExecutiveSummary() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 300, mb: 1, letterSpacing: '-0.02em' }}>
-          Executive Summary
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Rapid insight via concise summary
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 300, mb: 1, letterSpacing: '-0.02em' }}>
+              Executive Insights
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Rapid insight via concise summary
+            </Typography>
+          </Box>
+        </Box>
       </motion.div>
+
+      {/* Sub Navigation Tabs */}
+      <ExecutiveTabs />
 
       {/* Base Forecast Card */}
       <motion.div

@@ -8,7 +8,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊' },
   { name: 'Pipeline Integrity', href: '/dashboard/pipeline-integrity', icon: '🔍' },
   { name: 'Financials', href: '/dashboard/financials', icon: '💰' },
-  { name: 'Executive Summary', href: '/dashboard/executive-summary', icon: '📈' },
+  { name: 'Executive Insights', href: '/dashboard/executive-summary', icon: '📈' },
 ];
 
 export default function Navigation() {

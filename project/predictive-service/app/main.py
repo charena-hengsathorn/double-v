@@ -547,6 +547,106 @@ async def get_construction_billings(
         raise HTTPException(status_code=500, detail=f"Error fetching construction billings: {str(e)}")
 
 
+@app.get("/api/v1/data/sales/loose-furniture")
+async def get_loose_furniture_sales(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get loose furniture sales from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        sales = await strapi_client.get_loose_furniture_sales(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": sales, "count": len(sales)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching loose furniture sales: {str(e)}")
+
+
+@app.get("/api/v1/data/billings/loose-furniture")
+async def get_loose_furniture_billings(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get loose furniture billings from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        billings = await strapi_client.get_loose_furniture_billings(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": billings, "count": len(billings)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching loose furniture billings: {str(e)}")
+
+
+@app.get("/api/v1/data/sales/interior-design")
+async def get_interior_design_sales(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get interior design sales from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        sales = await strapi_client.get_interior_design_sales(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": sales, "count": len(sales)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching interior design sales: {str(e)}")
+
+
+@app.get("/api/v1/data/billings/interior-design")
+async def get_interior_design_billings(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get interior design billings from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        billings = await strapi_client.get_interior_design_billings(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": billings, "count": len(billings)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching interior design billings: {str(e)}")
+
+
+@app.get("/api/v1/data/projects")
+async def get_projects(
+    filters: Optional[str] = None,
+    populate: Optional[str] = None
+):
+    """Get projects from Strapi"""
+    try:
+        filter_dict = {}
+        if filters:
+            filter_dict = eval(filters) if isinstance(filters, str) else filters
+        
+        projects = await strapi_client.get_projects(
+            filters=filter_dict if filter_dict else None,
+            populate=populate
+        )
+        return {"data": projects, "count": len(projects)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching projects: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))

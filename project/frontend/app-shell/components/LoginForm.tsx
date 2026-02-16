@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../theme/ThemeContext';
 import {
   Box,
   Card,
@@ -11,7 +12,10 @@ import {
   Typography,
   Alert,
   CircularProgress,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import { Palette as PaletteIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
 export default function LoginForm() {
@@ -20,6 +24,7 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { themeMode, toggleTheme } = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +49,34 @@ export default function LoginForm() {
         justifyContent: 'center',
         bgcolor: 'background.default',
         p: 2,
+        position: 'relative',
       }}
     >
+      {/* Theme Toggle Button */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+        }}
+      >
+        <Tooltip title={`Switch to ${themeMode === 'minimal' ? 'Classic' : 'Minimal'} theme`}>
+          <IconButton
+            onClick={toggleTheme}
+            sx={{
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            }}
+          >
+            <PaletteIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

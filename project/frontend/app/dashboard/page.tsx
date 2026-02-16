@@ -27,7 +27,7 @@ const dashboardCards = [
     color: 'success',
   },
   {
-    title: 'Executive Summary',
+    title: 'Executive Insights',
     description: 'Rapid insight via concise summary',
     href: '/dashboard/executive-summary',
     icon: SummarizeIcon,

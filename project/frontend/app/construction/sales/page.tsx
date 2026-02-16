@@ -44,6 +44,7 @@ import {
 import { strapiApi } from '@/lib/api';
 import { motion } from 'framer-motion';
 import BranchCashflowTabs from '../../cashflow/components/BranchCashflowTabs';
+import { usePermissions } from '@/app-shell/hooks/usePermissions';
 
 interface SalesEntry {
   id?: string;
@@ -57,6 +58,7 @@ interface SalesEntry {
 }
 
 export default function ConstructionSalesPage() {
+  const { canBulkDelete } = usePermissions();
   const [sales, setSales] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -511,7 +513,7 @@ export default function ConstructionSalesPage() {
           >
             Add Sales Entry
           </Button>
-          {selectedEntries.size > 0 && (
+          {canBulkDelete() && selectedEntries.size > 0 && (
             <Button
               variant="contained"
               color="error"
@@ -630,14 +632,16 @@ export default function ConstructionSalesPage() {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'grey.50' }}>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            indeterminate={isIndeterminate}
-                            checked={isAllSelected}
-                            onChange={(e) => handleSelectAllWrapper(e.target.checked)}
-                            color="primary"
-                          />
-                        </TableCell>
+                        {canBulkDelete() && (
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              indeterminate={isIndeterminate}
+                              checked={isAllSelected}
+                              onChange={(e) => handleSelectAllWrapper(e.target.checked)}
+                              color="primary"
+                            />
+                          </TableCell>
+                        )}
                         <TableCell sx={{ fontWeight: 500 }}>Client</TableCell>
                         <TableCell sx={{ fontWeight: 500 }} align="right">Sale Amount</TableCell>
                         <TableCell sx={{ fontWeight: 500 }} align="right">Construction Cost</TableCell>
@@ -663,13 +667,15 @@ export default function ConstructionSalesPage() {
                           
                           return (
                             <TableRow key={sale.id || idx} hover selected={isSelected}>
-                              <TableCell padding="checkbox">
-                                <Checkbox
-                                  checked={isSelected}
-                                  onChange={(e) => entryId && handleSelectEntry(entryId, e.target.checked)}
-                                  color="primary"
-                                />
-                              </TableCell>
+                              {canBulkDelete() && (
+                                <TableCell padding="checkbox">
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onChange={(e) => entryId && handleSelectEntry(entryId, e.target.checked)}
+                                    color="primary"
+                                  />
+                                </TableCell>
+                              )}
                               <TableCell sx={{ fontWeight: 500 }}>
                                 {attrs.client || '—'}
                               </TableCell>
@@ -730,7 +736,7 @@ export default function ConstructionSalesPage() {
                         })
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
+                          <TableCell colSpan={canBulkDelete() ? 10 : 9} align="center" sx={{ py: 4 }}>
                             <Typography variant="body2" color="text.secondary">
                               No sales entries match the selected filters
                             </Typography>
@@ -756,7 +762,7 @@ export default function ConstructionSalesPage() {
                             }
                           }}
                         >
-                          <TableCell>-</TableCell>
+                          {canBulkDelete() && <TableCell>-</TableCell>}
                           <TableCell sx={{ fontWeight: 700, fontSize: '1rem' }}>
                             Total ({filteredSales.length})
                           </TableCell>

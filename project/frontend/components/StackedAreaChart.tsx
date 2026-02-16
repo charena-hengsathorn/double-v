@@ -8,7 +8,8 @@ interface MonthlyData {
   month: string;
   confirmed: number;
   tentative: number;
-  total: number;
+  total?: number;
+  actual?: number;
 }
 
 interface StackedAreaChartProps {
@@ -46,6 +47,10 @@ export default function StackedAreaChart({ data, title }: StackedAreaChartProps)
                 margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
               >
                 <defs>
+                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                  </linearGradient>
                   <linearGradient id="colorConfirmed" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
@@ -81,13 +86,24 @@ export default function StackedAreaChart({ data, title }: StackedAreaChartProps)
                   wrapperStyle={{ paddingTop: '20px' }}
                   iconType="circle"
                 />
+                {data.some((item) => item.actual !== undefined && item.actual > 0) && (
+                  <Area 
+                    type="monotone" 
+                    dataKey="actual" 
+                    stackId="1" 
+                    stroke="#3b82f6" 
+                    fill="url(#colorActual)"
+                    name="Actual Revenue"
+                    strokeWidth={2}
+                  />
+                )}
                 <Area 
                   type="monotone" 
                   dataKey="confirmed" 
                   stackId="1" 
                   stroke="#10b981" 
                   fill="url(#colorConfirmed)"
-                  name="Confirmed"
+                  name="Confirmed Forecast"
                   strokeWidth={2}
                 />
                 <Area 
@@ -96,7 +112,7 @@ export default function StackedAreaChart({ data, title }: StackedAreaChartProps)
                   stackId="1" 
                   stroke="#f59e0b" 
                   fill="url(#colorTentative)"
-                  name="Tentative"
+                  name="Tentative Forecast"
                   strokeWidth={2}
                 />
               </AreaChart>
