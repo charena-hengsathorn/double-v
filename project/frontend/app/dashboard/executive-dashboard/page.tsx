@@ -10,6 +10,7 @@ import RiskHeatmap from '@/components/RiskHeatmap';
 import ScenarioToggle from '@/components/ScenarioToggle';
 import PieChart from '@/components/PieChart';
 import BarChart from '@/components/BarChart';
+import LineChart from '@/components/LineChart';
 import ExecutiveTabs from '../components/ExecutiveTabs';
 import { motion } from 'framer-motion';
 
@@ -40,17 +41,9 @@ export default function ExecutiveDashboard() {
       setLoading(true);
       setError(null);
 
-      // Build filters for sales data
-      const salesFilters: Record<string, any> = {};
-      if (selectedClient !== 'all') {
-        salesFilters.client = selectedClient;
-      }
-      if (selectedMonth) {
-        salesFilters.month = selectedMonth;
-      }
-      if (selectedYear) {
-        salesFilters.year = selectedYear;
-      }
+      // Don't filter by client on server-side - do it client-side instead
+      // Only filter by month/year if needed (but we'll do client-side filtering for consistency)
+      // This ensures we have all data available for client-side filtering
 
       const [forecastData, heatmapData, projectsData, clientsData, constructionSalesData, looseFurnitureSalesData, interiorDesignSalesData, constructionBillingsData, looseFurnitureBillingsData, interiorDesignBillingsData] = await Promise.all([
         predictiveApi.getScenarioForecast(scenario).catch((err) => {
@@ -63,12 +56,12 @@ export default function ExecutiveDashboard() {
         }),
         strapiApi.getProjects().catch(() => ({ data: [] })),
         strapiApi.getClients().catch(() => ({ data: [] })),
-        strapiApi.getConstructionSales(Object.keys(salesFilters).length > 0 ? salesFilters : undefined).catch(() => ({ data: [] })),
-        strapiApi.getLooseFurnitureSales(Object.keys(salesFilters).length > 0 ? salesFilters : undefined).catch(() => ({ data: [] })),
-        strapiApi.getInteriorDesignSales(Object.keys(salesFilters).length > 0 ? salesFilters : undefined).catch(() => ({ data: [] })),
-        strapiApi.getConstructionBillings(Object.keys(salesFilters).length > 0 ? salesFilters : undefined).catch(() => ({ data: [] })),
-        strapiApi.getLooseFurnitureBillings(Object.keys(salesFilters).length > 0 ? salesFilters : undefined).catch(() => ({ data: [] })),
-        strapiApi.getInteriorDesignBillings(Object.keys(salesFilters).length > 0 ? salesFilters : undefined).catch(() => ({ data: [] })),
+        strapiApi.getConstructionSales().catch(() => ({ data: [] })),
+        strapiApi.getLooseFurnitureSales().catch(() => ({ data: [] })),
+        strapiApi.getInteriorDesignSales().catch(() => ({ data: [] })),
+        strapiApi.getConstructionBillings().catch(() => ({ data: [] })),
+        strapiApi.getLooseFurnitureBillings().catch(() => ({ data: [] })),
+        strapiApi.getInteriorDesignBillings().catch(() => ({ data: [] })),
       ]);
 
       setForecast(forecastData);
@@ -81,6 +74,15 @@ export default function ExecutiveDashboard() {
       setConstructionBillings(constructionBillingsData?.data || []);
       setLooseFurnitureBillings(looseFurnitureBillingsData?.data || []);
       setInteriorDesignBillings(interiorDesignBillingsData?.data || []);
+      
+      // Debug logging for client filter
+      if (selectedClient !== 'all') {
+        console.log('Client filter active:', selectedClient);
+        console.log('Construction Sales count:', constructionSalesData?.data?.length || 0);
+        console.log('Construction Billings count:', constructionBillingsData?.data?.length || 0);
+        console.log('Sample construction sale client:', constructionSalesData?.data?.[0]?.attributes?.client || constructionSalesData?.data?.[0]?.client);
+        console.log('Sample construction billing customer:', constructionBillingsData?.data?.[0]?.attributes?.customer || constructionBillingsData?.data?.[0]?.customer);
+      }
 
       // Debug logging
       if (forecastData) {
@@ -107,12 +109,24 @@ export default function ExecutiveDashboard() {
 
   // Filter sales data by month and year
   const filterSalesByDateAndClient = (sales: any[]) => {
+    if (!sales || sales.length === 0) return [];
+    
     return sales.filter((sale: any) => {
       const attrs = sale.attributes || sale;
       
-      // Filter by client
-      if (selectedClient !== 'all' && attrs.client !== selectedClient) {
-        return false;
+      // Filter by client (check both client and customer fields, case-insensitive)
+      if (selectedClient !== 'all') {
+        const saleClient = (attrs.client || attrs.customer || '').toString().trim();
+        const selectedClientTrimmed = selectedClient.toString().trim();
+        
+        // Skip if client field is empty and we're filtering
+        if (!saleClient) {
+          return false;
+        }
+        
+        if (saleClient.toLowerCase() !== selectedClientTrimmed.toLowerCase()) {
+          return false;
+        }
       }
 
       // Filter by month and year if provided
@@ -127,8 +141,10 @@ export default function ExecutiveDashboard() {
             return false;
           }
         } else {
-          // If no date field, skip filtering by date
-          return true;
+          // If no date field and date filters are set, exclude
+          if (selectedMonth || selectedYear) {
+            return false;
+          }
         }
       }
 
@@ -142,12 +158,24 @@ export default function ExecutiveDashboard() {
 
   // Filter billings data by month, year, and client
   const filterBillingsByDateAndClient = (billings: any[]) => {
+    if (!billings || billings.length === 0) return [];
+    
     return billings.filter((billing: any) => {
       const attrs = billing.attributes || billing;
       
-      // Filter by client (check customer field in billings)
-      if (selectedClient !== 'all' && attrs.customer !== selectedClient && attrs.client !== selectedClient) {
-        return false;
+      // Filter by client (check both customer and client fields, case-insensitive)
+      if (selectedClient !== 'all') {
+        const billingClient = (attrs.customer || attrs.client || '').toString().trim();
+        const selectedClientTrimmed = selectedClient.toString().trim();
+        
+        // Skip if client field is empty and we're filtering
+        if (!billingClient) {
+          return false;
+        }
+        
+        if (billingClient.toLowerCase() !== selectedClientTrimmed.toLowerCase()) {
+          return false;
+        }
       }
 
       // Filter by month and year if provided
@@ -162,8 +190,10 @@ export default function ExecutiveDashboard() {
             return false;
           }
         } else {
-          // If no date field, skip filtering by date
-          return true;
+          // If no date field and date filters are set, exclude
+          if (selectedMonth || selectedYear) {
+            return false;
+          }
         }
       }
 
@@ -183,11 +213,111 @@ export default function ExecutiveDashboard() {
     ];
   }, [filteredConstructionSales, filteredLooseFurnitureSales, filteredInteriorDesignSales]);
 
+  // Extract unique clients from actual sales and billings data
+  const uniqueClients = useMemo(() => {
+    const clientSet = new Set<string>();
+    
+    // Extract from sales
+    constructionSales.forEach((sale: any) => {
+      const attrs = sale.attributes || sale;
+      const client = attrs.client || attrs.customer;
+      if (client && typeof client === 'string') {
+        clientSet.add(client);
+      }
+    });
+    looseFurnitureSales.forEach((sale: any) => {
+      const attrs = sale.attributes || sale;
+      const client = attrs.client || attrs.customer;
+      if (client && typeof client === 'string') {
+        clientSet.add(client);
+      }
+    });
+    interiorDesignSales.forEach((sale: any) => {
+      const attrs = sale.attributes || sale;
+      const client = attrs.client || attrs.customer;
+      if (client && typeof client === 'string') {
+        clientSet.add(client);
+      }
+    });
+    
+    // Extract from billings
+    constructionBillings.forEach((billing: any) => {
+      const attrs = billing.attributes || billing;
+      const client = attrs.customer || attrs.client;
+      if (client && typeof client === 'string') {
+        clientSet.add(client);
+      }
+    });
+    looseFurnitureBillings.forEach((billing: any) => {
+      const attrs = billing.attributes || billing;
+      const client = attrs.customer || attrs.client;
+      if (client && typeof client === 'string') {
+        clientSet.add(client);
+      }
+    });
+    interiorDesignBillings.forEach((billing: any) => {
+      const attrs = billing.attributes || billing;
+      const client = attrs.customer || attrs.client;
+      if (client && typeof client === 'string') {
+        clientSet.add(client);
+      }
+    });
+    
+    // Also add clients from the clients API
+    clients.forEach((client: any) => {
+      const attrs = client.attributes || client;
+      const clientName = attrs.name || attrs.client_id;
+      if (clientName && typeof clientName === 'string') {
+        clientSet.add(clientName);
+      }
+    });
+    
+    return Array.from(clientSet).sort();
+  }, [constructionSales, looseFurnitureSales, interiorDesignSales, constructionBillings, looseFurnitureBillings, interiorDesignBillings, clients]);
+
   // Process data for pie chart 1: Amount per project (Top 10)
+  // When filtered by client: shows billing cycles (months) for that client
   const projectAmounts = useMemo(() => {
+    // If filtered by client, show billing cycles (months)
+    if (selectedClient !== 'all') {
+      const allFilteredBillings = [
+        ...filteredConstructionBillings,
+        ...filteredLooseFurnitureBillings,
+        ...filteredInteriorDesignBillings,
+      ];
+
+      // Group billings by month (billing cycles)
+      const monthlyBillingMap = new Map<string, number>();
+
+      allFilteredBillings.forEach((billing: any) => {
+        const attrs = billing.attributes || billing;
+        const billingDate = attrs.invoice_date || attrs.collected_date || attrs.date || attrs.createdAt;
+        if (billingDate) {
+          const date = new Date(billingDate);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          const monthLabel = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          const amount = parseFloat(attrs.amount || 0);
+          
+          if (amount > 0) {
+            monthlyBillingMap.set(monthLabel, (monthlyBillingMap.get(monthLabel) || 0) + amount);
+          }
+        }
+      });
+
+      // Convert to array and sort by month (chronologically)
+      return Array.from(monthlyBillingMap.entries())
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => {
+          // Sort by date
+          const dateA = new Date(a.name);
+          const dateB = new Date(b.name);
+          return dateA.getTime() - dateB.getTime();
+        });
+    }
+
+    // Default: Group by client (which represents projects) from sales
     const projectMap = new Map<string, number>();
 
-    // Group by client (which represents projects)
     filteredSales.forEach((sale: any) => {
       const attrs = sale.attributes || sale;
       const client = attrs.client || 'Unknown';
@@ -203,13 +333,57 @@ export default function ExecutiveDashboard() {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 10); // Top 10 projects
-  }, [filteredSales]);
+  }, [filteredSales, selectedClient, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings]);
 
   // Process data for bar chart: All projects comparison
   const allProjectsBarData = useMemo(() => {
+    // If a client is selected, show billing months instead of projects
+    if (selectedClient !== 'all') {
+      const allFilteredBillings = [
+        ...filteredConstructionBillings,
+        ...filteredLooseFurnitureBillings,
+        ...filteredInteriorDesignBillings,
+      ];
+      
+      // Group billings by month (only billings, not sales)
+      const monthlyRevenue = new Map<string, number>();
+      
+      allFilteredBillings.forEach((billing: any) => {
+        const attrs = billing.attributes || billing;
+        // Use invoice_date or collected_date for billing month grouping
+        const billingDate = attrs.invoice_date || attrs.collected_date || attrs.date || attrs.createdAt;
+        if (billingDate) {
+          const date = new Date(billingDate);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          const amount = parseFloat(attrs.amount || 0);
+          
+          if (amount > 0) {
+            monthlyRevenue.set(monthKey, (monthlyRevenue.get(monthKey) || 0) + amount);
+          }
+        }
+      });
+      
+      // Convert to array and sort by month (chronologically)
+      const result = Array.from(monthlyRevenue.entries())
+        .map(([monthKey, value]) => {
+          const [year, month] = monthKey.split('-');
+          const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+          return {
+            name: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            'Revenue': value,
+            sortKey: monthKey,
+          };
+        })
+        .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+        .map(({ sortKey, ...rest }) => rest);
+      
+      // Always return the result, even if empty (so the chart can show empty state)
+      return result;
+    }
+    
+    // Default: Group by client (which represents projects)
     const projectMap = new Map<string, number>();
 
-    // Group by client (which represents projects)
     filteredSales.forEach((sale: any) => {
       const attrs = sale.attributes || sale;
       const client = attrs.client || 'Unknown';
@@ -227,31 +401,85 @@ export default function ExecutiveDashboard() {
         'Revenue': value 
       }))
       .sort((a, b) => b.Revenue - a.Revenue);
-  }, [filteredSales]);
+  }, [filteredSales, selectedClient, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings]);
 
   // Process data for pie chart 2: Amount per business branch
+  // When no client filter: shows sales totals (original behavior)
+  // When filtered by client: shows revenue (total billings - total sales) by client
   const branchAmounts = useMemo(() => {
-    const constructionTotal = filteredConstructionSales.reduce((sum: number, sale: any) => {
+    // If filtered by client, show revenue (billings - sales) by client
+    if (selectedClient !== 'all') {
+      // Use unfiltered data to get all clients and calculate revenue for each
+      const clientRevenue = new Map<string, { sales: number; billings: number }>();
+
+      // Calculate total sales per client (from all unfiltered sales)
+      [
+        ...constructionSales,
+        ...looseFurnitureSales,
+        ...interiorDesignSales,
+      ].forEach((sale: any) => {
+        const attrs = sale.attributes || sale;
+        const client = (attrs.client || attrs.customer || 'Unknown').toString().trim();
+        const amount = parseFloat(attrs.sale_amount || 0);
+        
+        if (client && amount > 0) {
+          const existing = clientRevenue.get(client) || { sales: 0, billings: 0 };
+          clientRevenue.set(client, { ...existing, sales: existing.sales + amount });
+        }
+      });
+
+      // Calculate total billings per client (from all unfiltered billings)
+      [
+        ...constructionBillings,
+        ...looseFurnitureBillings,
+        ...interiorDesignBillings,
+      ].forEach((billing: any) => {
+        const attrs = billing.attributes || billing;
+        const client = (attrs.customer || attrs.client || 'Unknown').toString().trim();
+        const amount = parseFloat(attrs.amount || 0);
+        
+        if (client && amount > 0) {
+          const existing = clientRevenue.get(client) || { sales: 0, billings: 0 };
+          clientRevenue.set(client, { ...existing, billings: existing.billings + amount });
+        }
+      });
+
+      // Calculate revenue (billings - sales) for each client
+      return Array.from(clientRevenue.entries())
+        .map(([clientName, totals]) => {
+          const revenue = totals.billings - totals.sales; // Revenue = Billings - Sales
+          return {
+            name: revenue < 0 ? `${clientName} (Loss)` : clientName,
+            value: Math.abs(revenue), // Use absolute value for slice size
+            actualValue: revenue // Store actual value (can be negative) for display
+          };
+        })
+        .filter(item => item.value > 0) // Only show clients with non-zero revenue
+        .sort((a, b) => b.value - a.value); // Sort by revenue (descending)
+    }
+
+    // Default: Calculate total sales by branch (original behavior)
+    const constructionSalesTotal = filteredConstructionSales.reduce((sum: number, sale: any) => {
       const attrs = sale.attributes || sale;
       return sum + parseFloat(attrs.sale_amount || 0);
     }, 0);
 
-    const looseFurnitureTotal = filteredLooseFurnitureSales.reduce((sum: number, sale: any) => {
+    const looseFurnitureSalesTotal = filteredLooseFurnitureSales.reduce((sum: number, sale: any) => {
       const attrs = sale.attributes || sale;
       return sum + parseFloat(attrs.sale_amount || 0);
     }, 0);
 
-    const interiorDesignTotal = filteredInteriorDesignSales.reduce((sum: number, sale: any) => {
+    const interiorDesignSalesTotal = filteredInteriorDesignSales.reduce((sum: number, sale: any) => {
       const attrs = sale.attributes || sale;
       return sum + parseFloat(attrs.sale_amount || 0);
     }, 0);
 
     return [
-      { name: 'Construction', value: constructionTotal },
-      { name: 'Loose Furniture', value: looseFurnitureTotal },
-      { name: 'Interior Design', value: interiorDesignTotal },
+      { name: 'Construction', value: constructionSalesTotal },
+      { name: 'Loose Furniture', value: looseFurnitureSalesTotal },
+      { name: 'Interior Design', value: interiorDesignSalesTotal },
     ].filter(item => item.value > 0);
-  }, [filteredConstructionSales, filteredLooseFurnitureSales, filteredInteriorDesignSales]);
+  }, [filteredConstructionSales, filteredLooseFurnitureSales, filteredInteriorDesignSales, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings, selectedClient, constructionSales, looseFurnitureSales, interiorDesignSales, constructionBillings, looseFurnitureBillings, interiorDesignBillings]);
 
   // Filter projects based on selected filters
   const filteredProjects = useMemo(() => {
@@ -291,6 +519,51 @@ export default function ExecutiveDashboard() {
 
   // Process data for bar chart: Projects over time
   const projectsOverTime = useMemo(() => {
+    // If filtered by client, show billing cycles by month
+    if (selectedClient !== 'all') {
+      const monthlyBillings = new Map<string, { count: number; totalValue: number }>();
+      
+      const allFilteredBillings = [
+        ...filteredConstructionBillings,
+        ...filteredLooseFurnitureBillings,
+        ...filteredInteriorDesignBillings,
+      ];
+
+      allFilteredBillings.forEach((billing: any) => {
+        const attrs = billing.attributes || billing;
+        const billingDate = attrs.invoice_date || attrs.collected_date || attrs.date || attrs.createdAt;
+        
+        if (billingDate) {
+          const date = new Date(billingDate);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          const amount = parseFloat(attrs.amount || 0);
+          
+          if (amount > 0) {
+            const existing = monthlyBillings.get(monthKey) || { count: 0, totalValue: 0 };
+            monthlyBillings.set(monthKey, {
+              count: existing.count + 1,
+              totalValue: existing.totalValue + amount,
+            });
+          }
+        }
+      });
+
+      // Convert to array and sort by month
+      return Array.from(monthlyBillings.entries())
+        .map(([monthKey, data]) => {
+          const [year, month] = monthKey.split('-');
+          const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+          return {
+            name: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            'Billing Count': data.count,
+            'Total Value': data.totalValue,
+            sortKey: monthKey,
+          };
+        })
+        .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+        .map(({ sortKey, ...rest }) => rest);
+    }
+
     // If month/year filter is selected, show daily breakdown instead of monthly
     if (selectedMonth && selectedYear) {
       const dailyProjects = new Map<number, { count: number; totalValue: number }>();
@@ -382,7 +655,7 @@ export default function ExecutiveDashboard() {
       })
       .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
       .map(({ sortKey, ...rest }) => rest); // Remove sortKey from final data
-  }, [filteredProjects, filteredSales, selectedMonth, selectedYear]);
+  }, [filteredProjects, filteredSales, selectedMonth, selectedYear, selectedClient, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -399,25 +672,30 @@ export default function ExecutiveDashboard() {
     const currentYear = today.getFullYear();
     const currentMonth = today.getMonth() + 1;
 
-    // Combine all sales data
+    // Combine all sales data (already filtered by client if selected)
     const allSales = [
       ...filteredConstructionSales,
       ...filteredLooseFurnitureSales,
       ...filteredInteriorDesignSales,
     ];
 
-    // Combine all filtered billings data
+    // Combine all filtered billings data (already filtered by client if selected)
     const allBillings = [
       ...filteredConstructionBillings,
       ...filteredLooseFurnitureBillings,
       ...filteredInteriorDesignBillings,
     ];
 
+    // When filtering by client, show all-time data for that client
+    // Otherwise, show YTD data for all clients
+    const isClientFiltered = selectedClient !== 'all';
+
     // Calculate sales metrics
     const totalSalesYTD = allSales.reduce((sum, sale) => {
       const attrs = sale.attributes || sale;
       const saleDate = attrs.sale_date ? new Date(attrs.sale_date) : null;
-      if (saleDate && saleDate.getFullYear() === currentYear) {
+      // If client is filtered, include all sales; otherwise only YTD
+      if (isClientFiltered || (saleDate && saleDate.getFullYear() === currentYear)) {
         return sum + parseFloat(attrs.sale_amount || 0);
       }
       return sum;
@@ -426,7 +704,8 @@ export default function ExecutiveDashboard() {
     const totalProfitYTD = allSales.reduce((sum, sale) => {
       const attrs = sale.attributes || sale;
       const saleDate = attrs.sale_date ? new Date(attrs.sale_date) : null;
-      if (saleDate && saleDate.getFullYear() === currentYear) {
+      // If client is filtered, include all sales; otherwise only YTD
+      if (isClientFiltered || (saleDate && saleDate.getFullYear() === currentYear)) {
         return sum + parseFloat(attrs.project_profit || (attrs.sale_amount || 0) - (attrs.construction_cost || 0));
       }
       return sum;
@@ -436,7 +715,8 @@ export default function ExecutiveDashboard() {
     const billedYTD = allBillings.reduce((sum, billing) => {
       const attrs = billing.attributes || billing;
       const invoiceDate = attrs.invoice_date ? new Date(attrs.invoice_date) : null;
-      if (invoiceDate && invoiceDate.getFullYear() === currentYear) {
+      // If client is filtered, include all billings; otherwise only YTD
+      if (isClientFiltered || (invoiceDate && invoiceDate.getFullYear() === currentYear)) {
         return sum + parseFloat(attrs.amount || 0);
       }
       return sum;
@@ -445,7 +725,8 @@ export default function ExecutiveDashboard() {
     const collectedYTD = allBillings.reduce((sum, billing) => {
       const attrs = billing.attributes || billing;
       const collectedDate = attrs.collected_date ? new Date(attrs.collected_date) : null;
-      if (collectedDate && collectedDate.getFullYear() === currentYear) {
+      // If client is filtered, include all billings; otherwise only YTD
+      if (isClientFiltered || (collectedDate && collectedDate.getFullYear() === currentYear)) {
         return sum + parseFloat(attrs.amount || 0);
       }
       return sum;
@@ -483,7 +764,7 @@ export default function ExecutiveDashboard() {
       activeProjects,
       completedProjectsYTD,
     };
-  }, [filteredConstructionSales, filteredLooseFurnitureSales, filteredInteriorDesignSales, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings, filteredProjects]);
+  }, [filteredConstructionSales, filteredLooseFurnitureSales, filteredInteriorDesignSales, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings, filteredProjects, selectedClient]);
 
   // Extract forecast summary - handle different response structures
   const summary = forecast?.forecast?.summary || forecast?.summary || {};
@@ -492,6 +773,109 @@ export default function ExecutiveDashboard() {
   const heatmapStages = riskHeatmap?.heatmap?.stages || riskHeatmap?.stages || [];
   const heatmapBuckets = riskHeatmap?.heatmap?.probability_buckets || riskHeatmap?.probability_buckets || [];
   
+  // Revenue by cost trend when filtered by client
+  // Shows revenue (amount) and cost (construction_cost) as separate trend lines
+  // Uses recognition_month from billing data for proper month grouping
+  const revenueByCostTrend = useMemo(() => {
+    if (selectedClient === 'all') return [];
+    
+    const monthlyData = new Map<string, { revenue: number; cost: number }>();
+    
+    // Use unfiltered billings data and filter by client manually to ensure we get all data
+    const allBillings = [
+      ...constructionBillings,
+      ...looseFurnitureBillings,
+      ...interiorDesignBillings,
+    ];
+    
+    // Filter by client and group revenue and cost by month from billing data
+    allBillings.forEach((billing: any) => {
+      const attrs = billing.attributes || billing;
+      
+      // Filter by client
+      const billingClient = (attrs.customer || attrs.client || '').toString().trim();
+      const selectedClientTrimmed = selectedClient.toString().trim();
+      
+      if (!billingClient || billingClient.toLowerCase() !== selectedClientTrimmed.toLowerCase()) {
+        return; // Skip if client doesn't match
+      }
+      
+      // Use recognition_month if available (preferred for billing cycles)
+      // Otherwise fallback to invoice_date, collected_date, or createdAt
+      let monthLabel: string | null = null;
+      
+      if (attrs.recognition_month) {
+        // recognition_month format might be "YYYY-MM" or a date string
+        try {
+          const recMonth = attrs.recognition_month;
+          let date: Date;
+          
+          if (typeof recMonth === 'string' && recMonth.match(/^\d{4}-\d{2}/)) {
+            // Format: "YYYY-MM"
+            const [year, month] = recMonth.split('-');
+            date = new Date(parseInt(year), parseInt(month) - 1, 1);
+          } else {
+            // Try parsing as date string
+            date = new Date(recMonth);
+          }
+          
+          if (!isNaN(date.getTime())) {
+            monthLabel = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          }
+        } catch (e) {
+          console.warn('Error parsing recognition_month:', attrs.recognition_month, e);
+        }
+      }
+      
+      // Fallback to other date fields if recognition_month not available or invalid
+      if (!monthLabel) {
+        const billingDate = attrs.invoice_date || attrs.collected_date || attrs.date || attrs.createdAt;
+        if (billingDate) {
+          try {
+            const date = new Date(billingDate);
+            if (!isNaN(date.getTime())) {
+              monthLabel = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            }
+          } catch (e) {
+            console.warn('Error parsing billing date:', billingDate, e);
+          }
+        }
+      }
+      
+      if (monthLabel) {
+        // Get revenue (amount) and cost (construction_cost) from billing data
+        const revenue = parseFloat(attrs.amount || '0') || 0;
+        const cost = parseFloat(attrs.construction_cost || '0') || 0;
+        
+        // Only add if we have valid data
+        if (revenue > 0 || cost > 0) {
+          const existing = monthlyData.get(monthLabel) || { revenue: 0, cost: 0 };
+          monthlyData.set(monthLabel, {
+            revenue: existing.revenue + revenue,
+            cost: existing.cost + cost,
+          });
+        }
+      }
+    });
+
+    // Convert to array format for LineChart
+    // Add difference field for area fill (stacked on top of Cost)
+    return Array.from(monthlyData.entries())
+      .map(([monthLabel, data]) => ({
+        name: monthLabel,
+        'Revenue': data.revenue,
+        'Cost': data.cost,
+        'Revenue_diff': data.revenue - data.cost, // Difference for area fill (stacked on Cost)
+        'Difference': data.revenue - data.cost, // For tooltip display
+      }))
+      .sort((a, b) => {
+        // Sort by date
+        const dateA = new Date(a.name);
+        const dateB = new Date(b.name);
+        return dateA.getTime() - dateB.getTime();
+      });
+  }, [selectedClient, constructionBillings, looseFurnitureBillings, interiorDesignBillings]);
+
   // Combine operational revenue data with forecast data for Revenue Outlook chart
   const revenueOutlookData = useMemo(() => {
     // If a month is selected, show breakdown by project and billing date
@@ -508,24 +892,30 @@ export default function ExecutiveDashboard() {
       const revenueByBillingDate = new Map<number, number>();
       let totalRevenue = 0;
       
+      const selectedMonthNum = parseInt(selectedMonth);
+      const selectedYearNum = parseInt(selectedYear);
+      
       // Process billings data
       allFilteredBillings.forEach((billing: any) => {
         const attrs = billing.attributes || billing;
         const billingDate = attrs.collected_date || attrs.invoice_date || attrs.date || attrs.createdAt;
         if (billingDate) {
           const date = new Date(billingDate);
-          const day = date.getDate();
-          const amount = parseFloat(attrs.amount || 0);
-          
-          if (amount > 0) {
-            totalRevenue += amount;
+          // Verify the date matches the selected month and year
+          if (date.getMonth() + 1 === selectedMonthNum && date.getFullYear() === selectedYearNum) {
+            const day = date.getDate();
+            const amount = parseFloat(attrs.amount || 0);
             
+            if (amount > 0) {
+              totalRevenue += amount;
+              
             // Group by project/client
-            const client = attrs.customer || attrs.client || 'Unknown';
+            const client = (attrs.customer || attrs.client || 'Unknown').toString().trim();
             revenueByProject.set(client, (revenueByProject.get(client) || 0) + amount);
-            
-            // Group by billing date (day)
-            revenueByBillingDate.set(day, (revenueByBillingDate.get(day) || 0) + amount);
+              
+              // Group by billing date (day)
+              revenueByBillingDate.set(day, (revenueByBillingDate.get(day) || 0) + amount);
+            }
           }
         }
       });
@@ -536,14 +926,17 @@ export default function ExecutiveDashboard() {
         const saleDate = attrs.sale_date || attrs.date || attrs.createdAt;
         if (saleDate) {
           const date = new Date(saleDate);
-          const amount = parseFloat(attrs.sale_amount || 0);
-          
-          if (amount > 0) {
-            totalRevenue += amount;
+          // Verify the date matches the selected month and year
+          if (date.getMonth() + 1 === selectedMonthNum && date.getFullYear() === selectedYearNum) {
+            const amount = parseFloat(attrs.sale_amount || 0);
             
-            // Group by project/client
-            const client = attrs.client || 'Unknown';
+            if (amount > 0) {
+              totalRevenue += amount;
+              
+            // Group by project/client (normalize to handle case differences)
+            const client = (attrs.client || attrs.customer || 'Unknown').toString().trim();
             revenueByProject.set(client, (revenueByProject.get(client) || 0) + amount);
+            }
           }
         }
       });
@@ -566,7 +959,7 @@ export default function ExecutiveDashboard() {
         .map(([day, value]) => ({ day, value }))
         .sort((a, b) => a.day - b.day);
       
-      // Create entries: Total first, then projects, then billing dates
+      // Always include Total Revenue entry, even if 0
       chartData.push({
         name: 'Total Revenue',
         'Total Revenue': totalRevenue,
@@ -577,24 +970,29 @@ export default function ExecutiveDashboard() {
       // Add revenue by project (all projects, but limit display to top 15)
       const topProjects = projectsArray.slice(0, 15);
       topProjects.forEach((project) => {
-        chartData.push({
-          name: project.name.length > 25 ? project.name.substring(0, 25) + '...' : project.name,
-          'Total Revenue': 0,
-          'By Project': project.value,
-          'By Billing Date': 0,
-        });
+        if (project.value > 0) {
+          chartData.push({
+            name: project.name.length > 25 ? project.name.substring(0, 25) + '...' : project.name,
+            'Total Revenue': 0,
+            'By Project': project.value,
+            'By Billing Date': 0,
+          });
+        }
       });
       
       // Add revenue by billing date (all days with revenue)
       datesArray.forEach((dateItem) => {
-        chartData.push({
-          name: `Day ${dateItem.day}`,
-          'Total Revenue': 0,
-          'By Project': 0,
-          'By Billing Date': dateItem.value,
-        });
+        if (dateItem.value > 0) {
+          chartData.push({
+            name: `Day ${dateItem.day}`,
+            'Total Revenue': 0,
+            'By Project': 0,
+            'By Billing Date': dateItem.value,
+          });
+        }
       });
       
+      // Always return at least the Total Revenue entry
       return chartData.map((item) => ({
         month: item.name,
         actual: item['Total Revenue'] || item['By Project'] || item['By Billing Date'],
@@ -815,15 +1213,11 @@ export default function ExecutiveDashboard() {
                 variant="outlined"
               >
                 <MenuItem value="all">All Clients</MenuItem>
-                {clients.map((client: any) => {
-                  const attrs = client.attributes || client;
-                  const clientName = attrs.name || attrs.client_id || 'Unknown';
-                  return (
-                    <MenuItem key={client.id || client.documentId || clientName} value={clientName}>
-                      {clientName}
-                    </MenuItem>
-                  );
-                })}
+                {uniqueClients.map((clientName: string) => (
+                  <MenuItem key={clientName} value={clientName}>
+                    {clientName}
+                  </MenuItem>
+                ))}
               </TextField>
 
               {(selectedMonth || selectedYear || selectedClient !== 'all') && (
@@ -856,99 +1250,122 @@ export default function ExecutiveDashboard() {
       </Box>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
         <KPICard
-          title="Total Sales YTD"
+          title={selectedClient !== 'all' ? `Total Sales${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` : "Total Sales YTD"}
           value={formatCurrency(operationalMetrics.totalSalesYTD)}
-          subtitle="Year-to-date sales revenue"
+          subtitle={selectedClient !== 'all' ? `Sales revenue${selectedMonth && selectedYear ? ' for selected period' : ' (all-time)'}` : "Year-to-date sales revenue"}
           delay={0.1}
         />
         <KPICard
-          title="Collected YTD"
+          title={selectedClient !== 'all' ? `Collected${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` : "Collected YTD"}
           value={formatCurrency(operationalMetrics.collectedYTD)}
-          subtitle="Year-to-date cash collected"
+          subtitle={selectedClient !== 'all' ? `Cash collected${selectedMonth && selectedYear ? ' for selected period' : ' (all-time)'}` : "Year-to-date cash collected"}
           delay={0.2}
         />
         <KPICard
-          title="Total Profit YTD"
+          title={selectedClient !== 'all' ? `Total Profit${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` : "Total Profit YTD"}
           value={formatCurrency(operationalMetrics.totalProfitYTD)}
-          subtitle="Year-to-date profit"
+          subtitle={selectedClient !== 'all' ? `Profit${selectedMonth && selectedYear ? ' for selected period' : ' (all-time)'}` : "Year-to-date profit"}
           delay={0.3}
         />
         <KPICard
           title="Outstanding AR"
           value={formatCurrency(operationalMetrics.outstandingAR)}
-          subtitle="Accounts receivable"
+          subtitle={selectedClient !== 'all' ? `Accounts receivable for ${selectedClient}` : "Accounts receivable"}
           delay={0.4}
-        />
-      </Box>
-
-      {/* KPI Cards - Forecast Metrics */}
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 400, mb: 2, color: 'text.primary' }}>
-          Forecast Metrics
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-          Predictive analytics and pipeline projections
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
-        <KPICard
-          title="Confirmed Revenue"
-          value={formatCurrency(summary.total_confirmed || 0)}
-          subtitle="High confidence pipeline"
-          delay={0.5}
-        />
-        <KPICard
-          title="Tentative Pipeline"
-          value={formatCurrency(summary.total_tentative || 0)}
-          subtitle="Lower confidence pipeline"
-          delay={0.6}
-        />
-        <KPICard
-          title="Total Forecast"
-          value={formatCurrency(summary.total_forecast || 0)}
-          subtitle={`${((summary.conversion_rate || 0) * 100).toFixed(1)}% conversion`}
-          delay={0.7}
-        />
-        <KPICard
-          title="Risk Exposure"
-          value={formatCurrency(riskHeatmap?.summary?.total_at_risk || 0)}
-          subtitle={`${riskHeatmap?.summary?.high_risk_count || 0} high-risk deals`}
-          delay={0.8}
         />
       </Box>
 
       {/* Charts */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, gap: 3, mb: 4 }}>
-        {selectedMonth && selectedYear ? (
-          <BarChart
-            data={revenueOutlookData.map((item: any) => ({
-              name: item.month,
-              'Total Revenue': item.actual && item.month === 'Total Revenue' ? item.actual : 0,
-              'By Project': item.byProject || 0,
-              'By Billing Date': item.byBillingDate || 0,
-            }))}
-            title={`Revenue Outlook - ${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`}
-            dataKeys={[
-              { key: 'Total Revenue', name: 'Total Revenue', color: '#3b82f6' },
-              { key: 'By Project', name: 'By Project', color: '#10b981' },
-              { key: 'By Billing Date', name: 'By Billing Date', color: '#f59e0b' },
-            ]}
-          />
+        {selectedClient !== 'all' ? (
+          // When filtered by client, show revenue by cost trend line graph
+          revenueByCostTrend.length > 0 ? (
+            <LineChart
+              data={revenueByCostTrend}
+              title={`Revenue by Cost Trend - ${selectedClient}${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}`}
+              dataKeys={[
+                { key: 'Revenue', name: 'Amount', color: '#10b981' },
+                { key: 'Cost', name: 'Construction Cost', color: '#ef4444' },
+              ]}
+              showDifferenceFill={true}
+            />
+          ) : (
+            <Card sx={{ borderRadius: 3, p: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 400 }}>
+                Revenue by Cost Trend - {selectedClient}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                No revenue or cost data available for the selected client.
+              </Typography>
+            </Card>
+          )
+        ) : selectedMonth && selectedYear ? (
+          revenueOutlookData.length > 0 ? (
+            <BarChart
+              data={revenueOutlookData.map((item: any) => {
+                // Determine which value to show based on the item type
+                const isTotal = item.month === 'Total Revenue';
+                const isProject = item.byProject && item.byProject > 0;
+                const isBillingDate = item.byBillingDate && item.byBillingDate > 0;
+                
+                return {
+                  name: item.month,
+                  'Total Revenue': isTotal ? (item.actual || item.total || 0) : 0,
+                  'By Project': isProject ? (item.byProject || 0) : 0,
+                  'By Billing Date': isBillingDate ? (item.byBillingDate || 0) : 0,
+                };
+              })}
+              title={`Revenue Outlook - ${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`}
+              dataKeys={[
+                { key: 'Total Revenue', name: 'Total Revenue', color: '#3b82f6' },
+                { key: 'By Project', name: 'By Project', color: '#10b981' },
+                { key: 'By Billing Date', name: 'By Billing Date', color: '#f59e0b' },
+              ]}
+            />
+          ) : (
+            <Card sx={{ borderRadius: 3, p: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 400 }}>
+                Revenue Outlook - {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                No revenue data available for the selected month.
+              </Typography>
+            </Card>
+          )
         ) : (
           <StackedAreaChart
             data={revenueOutlookData}
             title="Revenue Outlook"
           />
         )}
-        {allProjectsBarData.length > 0 && (
+        {selectedClient !== 'all' ? (
+          allProjectsBarData.length > 0 ? (
+            <BarChart
+              data={allProjectsBarData}
+              title={`Billing Months Revenue - ${selectedClient}${selectedMonth || selectedYear ? ` (Filtered)` : ''}`}
+              dataKeys={[
+                { key: 'Revenue', name: 'Revenue', color: '#3b82f6' },
+              ]}
+            />
+          ) : (
+            <Card sx={{ borderRadius: 3, p: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 400 }}>
+                Billing Months Revenue - {selectedClient}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                No billing data available for the selected client.
+              </Typography>
+            </Card>
+          )
+        ) : allProjectsBarData.length > 0 ? (
           <BarChart
             data={allProjectsBarData}
-            title={`All Projects Revenue Comparison${selectedClient !== 'all' || selectedMonth || selectedYear ? ` (Filtered)` : ''}`}
+            title={`All Projects Revenue Comparison${selectedMonth || selectedYear ? ` (Filtered)` : ''}`}
             dataKeys={[
               { key: 'Revenue', name: 'Revenue', color: '#3b82f6' },
             ]}
           />
-        )}
+        ) : null}
       </Box>
 
       {/* Project Charts */}
@@ -956,13 +1373,17 @@ export default function ExecutiveDashboard() {
         {projectAmounts.length > 0 && (
           <PieChart
             data={projectAmounts}
-            title={`Revenue by Project (Top 10)${selectedClient !== 'all' || selectedMonth || selectedYear ? ` (Filtered)` : ''}`}
+            title={selectedClient !== 'all' 
+              ? `Revenue by Project Billing Cycles - ${selectedClient}${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` 
+              : `Revenue by Project (Top 10)${selectedMonth || selectedYear ? ` (Filtered)` : ''}`}
           />
         )}
         {branchAmounts.length > 0 && (
           <PieChart
             data={branchAmounts}
-            title={`Revenue by Business Branch${selectedClient !== 'all' || selectedMonth || selectedYear ? ` (Filtered)` : ''}`}
+            title={selectedClient !== 'all' 
+              ? `Revenue by Client (Billings - Sales)${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` 
+              : `Revenue by Business Branch${selectedMonth || selectedYear ? ` (Filtered)` : ''}`}
             colors={['#3b82f6', '#10b981', '#f59e0b']}
           />
         )}
@@ -973,11 +1394,18 @@ export default function ExecutiveDashboard() {
         <Box sx={{ mb: 4 }}>
           <BarChart
             data={projectsOverTime}
-            title={`Projects Over Time${selectedClient !== 'all' || selectedMonth || selectedYear ? ` (Filtered)` : ''}${selectedMonth && selectedYear ? ` - ${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : ''}`}
-            dataKeys={[
-              { key: 'Project Count', name: 'Project Count', color: '#3b82f6' },
-              { key: 'Total Value', name: 'Total Value ($)', color: '#10b981' },
-            ]}
+            title={selectedClient !== 'all' 
+              ? `Billing Cycles by Month - ${selectedClient}${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` 
+              : `Projects Over Time${selectedMonth || selectedYear ? ` (Filtered)` : ''}${selectedMonth && selectedYear ? ` - ${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : ''}`}
+            dataKeys={selectedClient !== 'all' 
+              ? [
+                  { key: 'Billing Count', name: 'Billing Count', color: '#3b82f6' },
+                  { key: 'Total Value', name: 'Total Value ($)', color: '#10b981' },
+                ]
+              : [
+                  { key: 'Project Count', name: 'Project Count', color: '#3b82f6' },
+                  { key: 'Total Value', name: 'Total Value ($)', color: '#10b981' },
+                ]}
           />
         </Box>
       )}
@@ -996,21 +1424,11 @@ export default function ExecutiveDashboard() {
                 <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mb: 1 }}>
                   Data Sources & Calculation Methodology
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.6, mb: 1.5 }}>
-                  <strong>Operational Metrics (Top Row):</strong> Calculated from actual sales and billings data stored in Strapi CMS. 
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.6 }}>
+                  <strong>Operational Metrics:</strong> Calculated from actual sales and billings data stored in Strapi CMS. 
                   Data is aggregated from Construction, Loose Furniture, and Interior Design branches. 
                   Year-to-date (YTD) calculations use the current calendar year. Outstanding AR includes all billings with status "sent" or "overdue".
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.6, mb: 1.5 }}>
-                  <strong>Forecast Metrics (Bottom Row):</strong> Generated by the Predictive Service API using a hybrid approach. 
-                  When pipeline deals are available, they are used with probability-weighted revenue recognition. 
-                  Otherwise, forecasts are derived from historical sales and billings data. Confirmed sales are projected at 100% probability over 12 months, 
-                  while pending sales use 50% probability over 6 months. Historical trends are incorporated as tentative projections.
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.6 }}>
-                  <strong>Environment Configuration:</strong> Development environment connects to local predictive service (localhost:8000), 
-                  while production connects to the deployed Heroku predictive service. All operational data is fetched from Strapi CMS based on the configured environment.
-                  These forecasts and metrics are estimates and should not be considered guarantees of future performance.
+                  All operational data is fetched from Strapi CMS based on the configured environment.
                 </Typography>
               </Box>
             </Box>
