@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 interface PieChartData {
   name: string;
   value: number;
+  actualValue?: number; // Optional: actual value if different from displayed value (e.g., for profit/loss)
 }
 
 interface PieChartProps {
@@ -84,12 +85,19 @@ export default function PieChart({ data, title, colors = DEFAULT_COLORS }: PieCh
                     borderRadius: '8px',
                     padding: '8px 12px',
                   }}
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={(value: number, name: string, props: any) => {
+                    // Use actualValue if available (for profit/loss), otherwise use value
+                    const displayValue = props.payload?.actualValue !== undefined ? props.payload.actualValue : value;
+                    return formatCurrency(displayValue);
+                  }}
                 />
                 <Legend
                   wrapperStyle={{ paddingTop: '20px' }}
                   iconType="circle"
-                  formatter={(value, entry: any) => `${value}: ${formatCurrency(entry.payload.value)}`}
+                  formatter={(value, entry: any) => {
+                    const displayValue = entry.payload?.actualValue !== undefined ? entry.payload.actualValue : entry.payload.value;
+                    return `${value}: ${formatCurrency(displayValue)}`;
+                  }}
                 />
               </RechartsPieChart>
             </ResponsiveContainer>

@@ -19,7 +19,7 @@ export default {
     // This allows API access without authentication for development
     // NOTE: You don't need to manually edit permissions in admin panel - this script handles it automatically
     try {
-      console.log('🔧 Setting up public permissions for content types...');
+      console.log('🔧 Setting up API permissions for content types (public + authenticated)...');
       
       // Wait for Strapi to be fully initialized
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -38,6 +38,9 @@ export default {
       const publicRole = await strapi
         .query('plugin::users-permissions.role')
         .findOne({ where: { type: 'public' } });
+      const authenticatedRole = await strapi
+        .query('plugin::users-permissions.role')
+        .findOne({ where: { type: 'authenticated' } });
 
       if (!publicRole) {
         console.log('⚠️  Public role not found, skipping permission setup');
@@ -45,6 +48,13 @@ export default {
       }
 
       console.log(`✅ Found public role (ID: ${publicRole.id})`);
+      if (authenticatedRole) {
+        console.log(`✅ Found authenticated role (ID: ${authenticatedRole.id})`);
+      } else {
+        console.log('⚠️  Authenticated role not found; only public permissions will be set');
+      }
+
+      const rolesToConfigure = [publicRole, ...(authenticatedRole ? [authenticatedRole] : [])];
 
       const contentTypes = [
         { uid: 'api::client.client', name: 'client' },
@@ -68,67 +78,70 @@ export default {
       let totalConfigured = 0;
       let totalErrors = 0;
 
-      for (const contentType of contentTypes) {
-        const actions = ['find', 'findOne', 'create', 'update', 'delete'];
-        
-        for (const action of actions) {
-          const actionName = `${contentType.uid}.${action}`;
-          
-          try {
-            // Check if permission already exists
-            const existing = await strapi
-              .query('plugin::users-permissions.permission')
-              .findOne({
-                where: {
-                  action: actionName,
-                  role: publicRole.id,
-                },
-              });
+      for (const role of rolesToConfigure) {
+        const roleLabel = role.type === 'public' ? 'public' : 'authenticated';
+        for (const contentType of contentTypes) {
+          const actions = ['find', 'findOne', 'create', 'update', 'delete'];
 
-            if (existing) {
-              // Always update to ensure it's enabled
-              await strapi
+          for (const action of actions) {
+            const actionName = `${contentType.uid}.${action}`;
+
+            try {
+              const existing = await strapi
                 .query('plugin::users-permissions.permission')
-                .update({
-                  where: { id: existing.id },
-                  data: { enabled: true },
-                });
-              if (!existing.enabled) {
-                totalConfigured++;
-                console.log(`  ✅ Enabled: ${contentType.name}.${action}`);
-              }
-            } else {
-              // Create new permission and enable it
-              await strapi
-                .query('plugin::users-permissions.permission')
-                .create({
-                  data: {
+                .findOne({
+                  where: {
                     action: actionName,
-                    role: publicRole.id,
-                    enabled: true,
+                    role: role.id,
                   },
                 });
-              totalConfigured++;
-              console.log(`  ✅ Created: ${contentType.name}.${action}`);
+
+              if (existing) {
+                await strapi
+                  .query('plugin::users-permissions.permission')
+                  .update({
+                    where: { id: existing.id },
+                    data: { enabled: true },
+                  });
+                if (!existing.enabled) {
+                  totalConfigured++;
+                  console.log(`  ✅ Enabled [${roleLabel}]: ${contentType.name}.${action}`);
+                }
+              } else {
+                await strapi
+                  .query('plugin::users-permissions.permission')
+                  .create({
+                    data: {
+                      action: actionName,
+                      role: role.id,
+                      enabled: true,
+                    },
+                  });
+                totalConfigured++;
+                console.log(`  ✅ Created [${roleLabel}]: ${contentType.name}.${action}`);
+              }
+            } catch (error: any) {
+              totalErrors++;
+              console.error(
+                `  ❌ Error setting [${roleLabel}] ${contentType.name}.${action}:`,
+                error?.message || error
+              );
             }
-          } catch (error: any) {
-            totalErrors++;
-            console.error(`  ❌ Error setting ${contentType.name}.${action}:`, error?.message || error);
           }
         }
       }
 
       if (totalConfigured > 0) {
-        console.log(`✅ Public permissions configured: ${totalConfigured} permissions enabled/created`);
+        console.log(`✅ Permissions configured: ${totalConfigured} enabled/created`);
       } else {
-        console.log('ℹ️  All public permissions already configured');
+        console.log('ℹ️  All permissions already configured');
       }
       
       if (totalErrors > 0) {
         console.log(`⚠️  Encountered ${totalErrors} errors while setting permissions`);
       }
 
-      console.log('✅ All API endpoints are now publicly accessible (no auth required)');
+      console.log('✅ API permissions configured for both public and authenticated roles');
       console.log('💡 You do NOT need to manually edit permissions in the admin panel');
     } catch (error: any) {
       console.error('❌ Error setting up public permissions:', error?.message || error);

@@ -672,11 +672,34 @@ export default function ExecutiveDashboard() {
     const currentYear = today.getFullYear();
     const currentMonth = today.getMonth() + 1;
 
-    // Combine all sales data (already filtered by client if selected)
-    const allSales = [
-      ...filteredConstructionSales,
-      ...filteredLooseFurnitureSales,
-      ...filteredInteriorDesignSales,
+    // When filtering by client, show all-time data for that client
+    // Otherwise, show YTD data for all clients
+    const isClientFiltered = selectedClient !== 'all';
+
+    // For YTD calculations, use raw sales data (not filtered by month/year)
+    // Only filter by client if a client is selected
+    const getSalesForMetrics = (sales: any[]) => {
+      return sales.filter((sale: any) => {
+        const attrs = sale.attributes || sale;
+        
+        // Filter by client if selected
+        if (isClientFiltered) {
+          const saleClient = (attrs.client || attrs.customer || '').toString().trim();
+          const selectedClientTrimmed = selectedClient.toString().trim();
+          if (!saleClient || saleClient.toLowerCase() !== selectedClientTrimmed.toLowerCase()) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+    };
+
+    // Get sales data for metrics (filtered by client only, not by month/year)
+    const salesForMetrics = [
+      ...getSalesForMetrics(constructionSales),
+      ...getSalesForMetrics(looseFurnitureSales),
+      ...getSalesForMetrics(interiorDesignSales),
     ];
 
     // Combine all filtered billings data (already filtered by client if selected)
@@ -686,29 +709,18 @@ export default function ExecutiveDashboard() {
       ...filteredInteriorDesignBillings,
     ];
 
-    // When filtering by client, show all-time data for that client
-    // Otherwise, show YTD data for all clients
-    const isClientFiltered = selectedClient !== 'all';
-
-    // Calculate sales metrics
-    const totalSalesYTD = allSales.reduce((sum, sale) => {
+    // Calculate sales metrics from sales table data
+    // Include ALL sales from the sales table (not filtered by year)
+    const totalSalesYTD = salesForMetrics.reduce((sum, sale) => {
       const attrs = sale.attributes || sale;
-      const saleDate = attrs.sale_date ? new Date(attrs.sale_date) : null;
-      // If client is filtered, include all sales; otherwise only YTD
-      if (isClientFiltered || (saleDate && saleDate.getFullYear() === currentYear)) {
-        return sum + parseFloat(attrs.sale_amount || 0);
-      }
-      return sum;
+      // Include all sales regardless of date
+      return sum + parseFloat(attrs.sale_amount || 0);
     }, 0);
 
-    const totalProfitYTD = allSales.reduce((sum, sale) => {
+    const totalProfitYTD = salesForMetrics.reduce((sum, sale) => {
       const attrs = sale.attributes || sale;
-      const saleDate = attrs.sale_date ? new Date(attrs.sale_date) : null;
-      // If client is filtered, include all sales; otherwise only YTD
-      if (isClientFiltered || (saleDate && saleDate.getFullYear() === currentYear)) {
-        return sum + parseFloat(attrs.project_profit || (attrs.sale_amount || 0) - (attrs.construction_cost || 0));
-      }
-      return sum;
+      // Include all sales regardless of date
+      return sum + parseFloat(attrs.project_profit || (attrs.sale_amount || 0) - (attrs.construction_cost || 0));
     }, 0);
 
     // Calculate billings metrics
@@ -764,7 +776,7 @@ export default function ExecutiveDashboard() {
       activeProjects,
       completedProjectsYTD,
     };
-  }, [filteredConstructionSales, filteredLooseFurnitureSales, filteredInteriorDesignSales, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings, filteredProjects, selectedClient]);
+  }, [constructionSales, looseFurnitureSales, interiorDesignSales, filteredConstructionBillings, filteredLooseFurnitureBillings, filteredInteriorDesignBillings, filteredProjects, selectedClient]);
 
   // Extract forecast summary - handle different response structures
   const summary = forecast?.forecast?.summary || forecast?.summary || {};
@@ -1250,9 +1262,9 @@ export default function ExecutiveDashboard() {
       </Box>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
         <KPICard
-          title={selectedClient !== 'all' ? `Total Sales${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` : "Total Sales YTD"}
+          title={selectedClient !== 'all' ? `Total Sales${selectedMonth && selectedYear ? ` (${new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})` : ''}` : "Total Sales"}
           value={formatCurrency(operationalMetrics.totalSalesYTD)}
-          subtitle={selectedClient !== 'all' ? `Sales revenue${selectedMonth && selectedYear ? ' for selected period' : ' (all-time)'}` : "Year-to-date sales revenue"}
+          subtitle={selectedClient !== 'all' ? `Sales revenue${selectedMonth && selectedYear ? ' for selected period' : ' (all-time)'}` : "Total sales revenue from all sales"}
           delay={0.1}
         />
         <KPICard

@@ -14,10 +14,13 @@ async function setPublicPermissions() {
     
     const app = await strapi({ distDir: './dist' }).load();
     
-    console.log('📋 Fetching public role...');
+    console.log('📋 Fetching public and authenticated roles...');
     const publicRole = await app
       .query('plugin::users-permissions.role')
       .findOne({ where: { type: 'public' } });
+    const authenticatedRole = await app
+      .query('plugin::users-permissions.role')
+      .findOne({ where: { type: 'authenticated' } });
 
     if (!publicRole) {
       console.error('❌ Public role not found!');
@@ -26,6 +29,11 @@ async function setPublicPermissions() {
     }
 
     console.log(`✅ Found public role (ID: ${publicRole.id})`);
+    if (authenticatedRole) {
+      console.log(`✅ Found authenticated role (ID: ${authenticatedRole.id})`);
+    }
+
+    const rolesToConfigure = [publicRole, ...(authenticatedRole ? [authenticatedRole] : [])];
 
     const contentTypes = [
       { uid: 'api::client.client', name: 'client' },
@@ -39,58 +47,58 @@ async function setPublicPermissions() {
       { uid: 'api::sale.sale', name: 'sales' },
     ];
 
-    console.log(`\n📝 Configuring permissions for ${contentTypes.length} content types...`);
+    console.log(`\n📝 Configuring permissions for ${contentTypes.length} content types (public + authenticated)...`);
 
     let totalUpdated = 0;
     let totalCreated = 0;
 
-    for (const contentType of contentTypes) {
-      const actions = ['find', 'findOne', 'create', 'update', 'delete'];
-      
-      for (const action of actions) {
-        const actionName = `${contentType.uid}.${action}`;
-        
-        try {
-          // Check if permission already exists
-          const existing = await app
-            .query('plugin::users-permissions.permission')
-            .findOne({
-              where: {
-                action: actionName,
-                role: publicRole.id,
-              },
-            });
+    for (const role of rolesToConfigure) {
+      const roleLabel = role.type === 'public' ? 'public' : 'authenticated';
+      for (const contentType of contentTypes) {
+        const actions = ['find', 'findOne', 'create', 'update', 'delete'];
 
-          if (existing) {
-            // Update existing permission to enable it
-            if (!existing.enabled) {
-              await app
-                .query('plugin::users-permissions.permission')
-                .update({
-                  where: { id: existing.id },
-                  data: { enabled: true },
-                });
-              console.log(`  ✅ Updated: ${contentType.name}.${action}`);
-              totalUpdated++;
-            } else {
-              console.log(`  ⏭️  Already enabled: ${contentType.name}.${action}`);
-            }
-          } else {
-            // Create new permission and enable it
-            await app
+        for (const action of actions) {
+          const actionName = `${contentType.uid}.${action}`;
+
+          try {
+            const existing = await app
               .query('plugin::users-permissions.permission')
-              .create({
-                data: {
+              .findOne({
+                where: {
                   action: actionName,
-                  role: publicRole.id,
-                  enabled: true,
+                  role: role.id,
                 },
               });
-            console.log(`  ✅ Created: ${contentType.name}.${action}`);
-            totalCreated++;
+
+            if (existing) {
+              if (!existing.enabled) {
+                await app
+                  .query('plugin::users-permissions.permission')
+                  .update({
+                    where: { id: existing.id },
+                    data: { enabled: true },
+                  });
+                console.log(`  ✅ Updated [${roleLabel}]: ${contentType.name}.${action}`);
+                totalUpdated++;
+              } else {
+                console.log(`  ⏭️  Already enabled [${roleLabel}]: ${contentType.name}.${action}`);
+              }
+            } else {
+              await app
+                .query('plugin::users-permissions.permission')
+                .create({
+                  data: {
+                    action: actionName,
+                    role: role.id,
+                    enabled: true,
+                  },
+                });
+              console.log(`  ✅ Created [${roleLabel}]: ${contentType.name}.${action}`);
+              totalCreated++;
+            }
+          } catch (error) {
+            console.error(`  ❌ Error setting [${roleLabel}] ${contentType.name}.${action}:`, error.message);
           }
-        } catch (error) {
-          console.error(`  ❌ Error setting ${contentType.name}.${action}:`, error.message);
         }
       }
     }
@@ -98,7 +106,7 @@ async function setPublicPermissions() {
     console.log(`\n✅ Permissions configuration complete!`);
     console.log(`   - Created: ${totalCreated} permissions`);
     console.log(`   - Updated: ${totalUpdated} permissions`);
-    console.log(`\n🎯 Public API endpoints should now be accessible without authentication.`);
+    console.log(`\n🎯 API endpoints are now allowed for both public and authenticated roles.`);
 
     await app.destroy();
     process.exit(0);
